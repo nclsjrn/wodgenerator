@@ -75,9 +75,6 @@ h1 { margin: 6px 0 4px; font: 700 2rem/1.05 var(--font-display); letter-spacing:
 .seg button:hover:not([aria-pressed="true"]) { background: var(--surface); }
 .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
 .seg button.clear { flex: 0 0 auto; color: var(--muted); text-decoration: underline; }
-.seg.row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-.seg.row::-webkit-scrollbar { display: none; }
-.seg.row button { flex: 0 0 auto; padding: 0 12px; }
 .btn.wide { flex: 1 1 100%; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .empty { margin: 0; padding-block: 18px; color: var(--muted); font: 600 1.1rem/1.3 var(--font-body); }
@@ -171,7 +168,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   </header>
 
   <section class="controls" aria-label="Options">
-    <div class="field"><span id="lbl-ses">Session</span><div class="seg row" id="seg-ses" role="group" aria-labelledby="lbl-ses"></div></div>
+    <div class="field"><span id="lbl-ses">Session</span><div class="seg" id="seg-ses" role="group" aria-labelledby="lbl-ses"></div></div>
     <div class="field" id="fld-hero" hidden><span id="lbl-hero">Workout</span><div class="seg" id="seg-hero" role="group" aria-labelledby="lbl-hero"></div></div>
     <div class="field" id="fld-gor" hidden><span id="lbl-loc">Where</span><div class="seg" id="seg-loc" role="group" aria-labelledby="lbl-loc"></div></div>
     <div class="field" id="fld-core" hidden><span id="lbl-core">Core type</span><div class="seg" id="seg-core" role="group" aria-labelledby="lbl-core"></div></div>
@@ -705,7 +702,7 @@ const SESSION_MU = {
 const sessionAllows = function (ses, k) { return !SESSION_MU[ses] || k === 'comp' || SESSION_MU[ses].indexOf(k) !== -1; };
 
 // One-sided Tabata movements are done left then right, back to back.
-function sides(m) { return m.unit === 'side' ? ['left', 'right'] : ['']; }
+function sides(m) { return (m.unit === 'side' || /^Side plank$/.test(m.name)) ? ['left', 'right'] : ['']; }
 
 // A spec is one entry per movement: which muscle (or compound) it comes from and which pattern slot.
 // One entry per selected muscle and one for the compound first, then extra entries for the selected muscles until the circuit has enough movements.
