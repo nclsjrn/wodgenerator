@@ -624,6 +624,7 @@ const specPool = function (sp, fmt, rules) {
     if (fmt === 'triset' && isTimed(m)) return false;
     if (ACTIVE_EQ.indexOf(eqOf(m)) === -1) return false;
     if (rules && (rules.noPats.indexOf(m.pat) !== -1 || rules.noNames.indexOf(m.name) !== -1)) return false;
+    if (rules && rules.noCompPats && sp.k === 'comp' && rules.noCompPats.indexOf(m.pat) !== -1) return false;
     if (rules && rules.noMuscles && rules.noMuscles.some(function (x) { return m.muscles.indexOf(x) !== -1; })) return false;
     if (sp.k === 'comp') return m.muscles.indexOf('comp') !== -1;
     if (m.muscles.indexOf(sp.k) === -1) return false;
@@ -667,7 +668,7 @@ const HARD_J = ['Burpee broad jumps', 'Treadmill sprints'];
 const PRESETS = {
   push: {
     label: 'Push', sel: ['chest', 'shoulders', 'triceps'], comp: true,
-    rules: { noPats: ['jump'], noNames: ['Burpee box jump-overs'], maxPress: 1, maxHinge: 1, finNo: HARD_J },
+    rules: { noPats: ['jump'], noNames: ['Burpee box jump-overs', 'Sled push', 'Sled pull'], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress', 'carry'], maxPress: 1, maxHinge: 1, finNo: HARD_J },
     rpe: { std: 'RPE 7-8', hard: 'RPE 8-9' },
     note: 'Push session rules: at most one pressing and one hinging movement so the circuit stays light after bench, and no hard jumping or running so your legs are fresh for leg day.'
   },
@@ -679,13 +680,13 @@ const PRESETS = {
   },
   pull: {
     label: 'Pull', sel: ['back', 'biceps', 'shoulders'], comp: true,
-    rules: { noPats: ['hinge', 'jump', 'burpee'], noNames: [], maxPress: 1, finNo: IMPACT },
+    rules: { noPats: ['hinge', 'jump', 'burpee'], noNames: ['Sled push', 'Sled pull'], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress', 'carry'], maxPress: 1, finNo: IMPACT },
     rpe: { std: 'RPE 7', hard: 'RPE 8' },
     note: 'Pull session rules: no hinging, running or jumping after deadlifts, at most one pressing movement, and a low-impact finisher the day after HYROX.'
   },
   hyp: {
     label: 'Hypertrophy', sel: ['chest', 'back', 'shoulders', 'biceps', 'triceps'], comp: true,
-    rules: { noPats: ['hinge', 'jump', 'thruster', 'squatpress', 'gto', 'wallball', 'squat', 'lunge', 'single', 'calf', 'burpee'], noNames: ['Burpee box jump-overs'], noMuscles: ['legs'], finNo: HARD_J },
+    rules: { noPats: ['hinge', 'jump', 'thruster', 'squatpress', 'gto', 'wallball', 'squat', 'lunge', 'single', 'calf', 'burpee'], noNames: ['Burpee box jump-overs', 'Sled push', 'Sled pull'], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress', 'carry'], noMuscles: ['legs'], finNo: HARD_J },
     rpe: { std: 'RPE 6-7', hard: 'RPE 7-8' },
     note: 'Hypertrophy: any upper-body movements, 12 or more reps (10 or more each side) for growth. No hinging, jumping or legs.'
   },
@@ -732,7 +733,7 @@ function makeSpec(sel, comp, fmt, cnt, n, custom, auto) {
 function validShape(items, fmt, T, relax, rules, extra) {
   if (items.length !== T) return false;
   if (new Set(items.map(function (m) { return m.base; })).size !== items.length) return false;
-  if (!relax && new Set(items.map(function (m) { return m.pat; })).size !== items.length) return false;
+  if (new Set(items.map(function (m) { return m.pat; })).size !== items.length) return false;
   if (fmt === 'amrap' && items.filter(function (m) { return !isTimed(m); }).length < 1) return false;
   if (rules) {
     if (rules.maxPress !== undefined && items.filter(function (m) { return PRESS.indexOf(m.pat) !== -1; }).length > rules.maxPress + (extra || 0)) return false;
@@ -964,7 +965,7 @@ function labelFor(w, i) {
 
 function titleOf(w) {
   const names = { amrap: 'AMRAP', emom: 'EMOM' };
-  if (w.fmt === 'tabata') return 'Core · ' + ({ dyn: 'dynamic', stat: 'static', mix: 'mix' }[w.ctype || 'mix']) + ' · 40/20';
+  if (w.fmt === 'tabata') return 'Core · ' + ({ dyn: 'dynamic', stat: 'static', mix: 'mix' }[w.ctype || 'mix']) + ' · Tabata';
   if (w.fmt === 'triset') return w.rounds + (w.items.length === 3 ? '-round SET' : '-round GIANT SET');
   if (w.fmt === 'fortime') return w.rounds + ' rounds FT';
   return w.n + '-min ' + names[w.fmt];
@@ -1138,7 +1139,7 @@ function heroText(w) {
 // Categories for the random bodyweight circuit. Pull-ups always come first; push, pull and core are weighted up.
 const GOR_CATS = [
   { tag: 'Pull', n: 2, reps: 8, park: ['Pull-ups', 'Chin-ups', 'Close-grip chin-ups', 'Commando pull-ups', 'Negative chin-ups', 'Scapular pull-ups', 'Towel pull-ups'], box: ['Australian pull-ups', 'Ring rows', 'TRX rows', 'Underhand inverted rows', 'Inverted rows with feet elevated'] },
-  { tag: 'Push', n: 2, reps: 12, park: ['Standard push-ups', 'Wide push-ups', 'Hand-release push-ups', 'Shoulder-tap push-ups', 'Tempo push-ups', 'Diamond push-ups', 'Close-grip push-ups', 'Archer push-ups', 'Staggered-hand push-ups', 'Pike push-ups', 'Incline push-ups', 'Decline push-ups', 'Bench dips'], box: ['Ring push-ups', 'Parallel-bar dips', 'Ring dips', 'Wall handstand push-ups'] },
+  { tag: 'Push', n: 2, reps: 12, park: ['Standard push-ups', 'Wide push-ups', 'Hand-release push-ups', 'Shoulder-tap push-ups', 'Tempo push-ups', 'Diamond push-ups', 'Close-grip push-ups', 'Archer push-ups', 'Staggered-hand push-ups', 'Pike push-ups', 'Incline push-ups', 'Decline push-ups', 'Bench dips', 'Parallel-bar dips'], box: ['Ring push-ups', 'Ring dips', 'Wall handstand push-ups'] },
   { tag: 'Core', n: 2, reps: 12, park: ['V-ups', 'Sit-ups', 'Hollow rocks', 'Bicycle crunches', 'Leg up & kick', 'Leg raises', 'Dead bugs', 'Plank hold', 'Side plank', 'L-sit hold', 'Hollow hold'], box: ['Hanging knee raises', 'Hanging leg raises', 'Toes-to-bar'] },
   { tag: 'Calisthenics', n: 1, reps: 12, park: ['Air squats', 'Pistol squats', 'Jumping squats', 'Walking lunges', 'Reverse lunges', 'Wall sits', 'Squat holds', 'Burpees', 'Superman hold', 'Skater hops', 'Calf raises', 'Single-leg glute bridges', 'Step-ups', 'Bulgarian split squats'], box: ['Jumping lunges'] }
 ];
@@ -1164,15 +1165,17 @@ function gorillaWorkout(loc, rounds, lvl) {
     used[nm] = true;
     return { ci: ci, nm: nm };
   };
-  // Pull-ups first, then the rest of the categories; only the order of the last six is shuffled.
-  const picks = [take(0, 'Pull-ups')];
+  // Order: pull-ups, then a push, then a core movement. The last four are random from the whole bodyweight pool.
+  const picks = [take(0, 'Pull-ups'), take(1), take(2)];
+  const pool = [];
   GOR_CATS.forEach(function (cat, ci) {
-    const want = ci === 0 ? cat.n - 1 : cat.n;
-    for (let k = 0; k < want; k++) picks.push(take(ci));
+    gorPool(ci, loc).forEach(function (nm) { pool.push({ ci: ci, nm: nm }); });
   });
-  const rest = shuffle(picks.slice(1));
-  const all = [picks[0]].concat(rest);
-  return { gor: true, fmt: 'gorilla', loc: loc, rounds: rounds, lvl: lvl === 'std' ? 'std' : 'hard', items: all.map(function (x) { return gorItem(x.ci, x.nm, lvl); }) };
+  shuffle(pool.filter(function (x) { return !used[x.nm]; })).slice(0, 4).forEach(function (x) {
+    used[x.nm] = true;
+    picks.push(x);
+  });
+  return { gor: true, fmt: 'gorilla', loc: loc, rounds: rounds, lvl: lvl === 'std' ? 'std' : 'hard', items: picks.map(function (x) { return gorItem(x.ci, x.nm, lvl); }) };
 }
 function gorSwap(w, i) {
   const ci = w.items[i].slot;
@@ -1498,7 +1501,7 @@ function renderControls() {
   $('fld-rnd').hidden = !gor;
   if (gor) {
     segment($('seg-loc'), [['park', 'Park (pull-up bar)'], ['box', 'Box (all equipment)']], state.gloc, function (v) { state.gloc = v; save(); renderControls(); regenerate(); });
-    segment($('seg-rnd'), [[3, '3'], [4, '4'], [5, '5']], state.grnd, function (v) { state.grnd = v; save(); renderControls(); regenerate(); });
+    segment($('seg-rnd'), [[3, '3'], [4, '4'], [5, '5']], state.grnd, function (v) { state.grnd = v; save(); if (state.w && state.w.gor) { state.w.rounds = v; renderGorilla(); } renderControls(); });
   }
   $('fld-hero').hidden = !hero;
   $('seg-mu').parentElement.hidden = special;
@@ -1823,6 +1826,20 @@ function applySettings(changed) {
   if (state.ses === 'hero' || state.ses === 'gorilla') { regenerate(); return; }
   const w = state.w;
   setEq(state.eq);
+  // Core intervals: unticking gear only removes the movements that need it and tops the circuit back up; the rest stay.
+  if (changed === 'eq' && w && w.fmt === 'tabata') {
+    const kept = w.items.filter(function (m) { return ACTIVE_EQ.indexOf(eqOf(m)) !== -1; });
+    const names = kept.map(function (m) { return m.name; });
+    const slots = function (t) { return t.reduce(function (n, m) { return n + sides(m).length; }, 0); };
+    shuffle(corePool().filter(function (m) { return names.indexOf(m.name) === -1; })).forEach(function (m) {
+      if (slots(kept) + sides(m).length <= 4 && names.indexOf(m.name) === -1) { kept.push(m); names.push(m.name); }
+    });
+    if (!valid(kept, null, 'tabata', 4)) { regenerate(); return; }
+    w.items = kept;
+    $('status').textContent = '';
+    renderSheet();
+    return;
+  }
   if ((!state.sel.length && !state.comp) || isCoreOnly(state.sel, state.comp) || changed === 'mu' || changed === 'eq' || !w || w.fmt === 'tabata' || w.preset !== state.ses) { regenerate(); return; }
   const T = countFor(state.sel, state.comp, state.fmt, state.cnt, state.len, state.ses === 'custom', state.emomAuto);
   if (!valid(w.items, w.spec, state.fmt, T, true, w.rules, w.extra)) { regenerate(); return; }
