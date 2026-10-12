@@ -1470,8 +1470,13 @@ function toggleEq(k) {
   save(); renderControls(); applySettings('eq');
 }
 
+// Only New workout builds a new workout. Other controls reshape the current one or ask for New workout.
+function keepWorkout() {
+  if (state.w) setStatus('Tap New workout to build with these settings.');
+}
+
 function pickHero(k) {
-  state.hero = k; save(); renderControls(); regenerate();
+  state.hero = k; save(); renderControls(); keepWorkout();
 }
 
 function pickSession(k) {
@@ -1495,13 +1500,28 @@ function renderControls() {
   CORE_TYPE = state.ctype;
   const coreOnly = isCoreOnly(state.sel, state.comp);
   $('fld-core').hidden = !coreOnly;
-  if (coreOnly) segment($('seg-core'), [['dyn', 'Dynamic'], ['stat', 'Static'], ['mix', 'Mix']], state.ctype, function (v) { state.ctype = v; CORE_TYPE = v; save(); renderControls(); regenerate(); });
+  if (coreOnly) segment($('seg-core'), [['dyn', 'Dynamic'], ['stat', 'Static'], ['mix', 'Mix']], state.ctype, function (v) { state.ctype = v; CORE_TYPE = v; save(); renderControls(); keepWorkout(); });
   const hero = state.ses === 'hero';
   const special = hero || gor;
   $('fld-gor').hidden = !gor;
   $('fld-rnd').hidden = !gor;
   if (gor) {
-    segment($('seg-loc'), [['park', 'Park (pull-up bar)'], ['box', 'Box (all equipment)']], state.gloc, function (v) { state.gloc = v; save(); renderControls(); regenerate(); });
+    segment($('seg-loc'), [['park', 'Park (pull-up bar)'], ['box', 'Box (all equipment)']], state.gloc, function (v) {
+      state.gloc = v; save(); renderControls();
+      if (state.w && state.w.gor) {
+        state.w.loc = v;
+        let ok = true;
+        state.w.items.forEach(function (x, k) {
+          if (gorPool(x.slot, v).indexOf(x.name) !== -1) return;
+          const used = state.w.items.map(function (y) { return y.name; });
+          const c = shuffle(gorPool(x.slot, v).filter(function (nm) { return used.indexOf(nm) === -1; }));
+          if (!c.length) { ok = false; return; }
+          state.w.items[k] = gorItem(x.slot, c[0], state.lvl);
+        });
+        if (ok) { renderGorilla(); return; }
+      }
+      keepWorkout();
+    });
     segment($('seg-rnd'), [[3, '3'], [4, '4'], [5, '5']], state.grnd, function (v) { state.grnd = v; save(); if (state.w && state.w.gor) { state.w.rounds = v; renderGorilla(); } renderControls(); });
   }
   $('fld-hero').hidden = !hero;
@@ -1824,7 +1844,15 @@ function regenerate() {
 // Picking a format, length or level reshapes the workout on screen, keeping the same movements when they still fit.
 // Picking different muscles, a session or equipment builds new movements.
 function applySettings(changed) {
-  if (state.ses === 'hero' || state.ses === 'gorilla') { regenerate(); return; }
+  // Gorilla level changes the reps and load on the same movements, in the same order.
+  if (state.ses === 'gorilla' && changed === 'lvl' && state.w && state.w.gor) {
+    state.w.lvl = state.lvl === 'std' ? 'std' : 'hard';
+    state.w.items = state.w.items.map(function (x) { return gorItem(x.slot, x.name, state.lvl); });
+    $('status').textContent = '';
+    renderGorilla();
+    return;
+  }
+  if (state.ses === 'hero' || state.ses === 'gorilla') { keepWorkout(); return; }
   const w = state.w;
   setEq(state.eq);
   // Core intervals: unticking gear only removes the movements that need it and tops the circuit back up; the rest stay.
@@ -1835,15 +1863,15 @@ function applySettings(changed) {
     shuffle(corePool().filter(function (m) { return names.indexOf(m.name) === -1; })).forEach(function (m) {
       if (slots(kept) + sides(m).length <= 4 && names.indexOf(m.name) === -1) { kept.push(m); names.push(m.name); }
     });
-    if (!valid(kept, null, 'tabata', 4)) { regenerate(); return; }
+    if (!valid(kept, null, 'tabata', 4)) { keepWorkout(); return; }
     w.items = kept;
     $('status').textContent = '';
     renderSheet();
     return;
   }
-  if ((!state.sel.length && !state.comp) || isCoreOnly(state.sel, state.comp) || changed === 'mu' || changed === 'eq' || !w || w.fmt === 'tabata' || w.preset !== state.ses) { regenerate(); return; }
+  if ((!state.sel.length && !state.comp) || isCoreOnly(state.sel, state.comp) || changed === 'mu' || changed === 'eq' || !w || w.fmt === 'tabata' || w.preset !== state.ses) { keepWorkout(); return; }
   const T = countFor(state.sel, state.comp, state.fmt, state.cnt, state.len, state.ses === 'custom', state.emomAuto);
-  if (!valid(w.items, w.spec, state.fmt, T, true, w.rules, w.extra)) { regenerate(); return; }
+  if (!valid(w.items, w.spec, state.fmt, T, true, w.rules, w.extra)) { keepWorkout(); return; }
   state.w = reshape(w, state.fmt, state.len, state.lvl);
   $('status').textContent = '';
   renderSheet();
