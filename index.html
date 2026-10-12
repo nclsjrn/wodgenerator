@@ -695,12 +695,13 @@ const PRESETS = {
 const PRESET_ORDER = ['push', 'legs', 'pull', 'hyp', 'core'];
 // The only muscles each session can use. Compound is always allowed; Legs is legs and compound only.
 const SESSION_MU = {
-  push: ['chest', 'shoulders', 'triceps', 'core'],
-  pull: ['back', 'biceps', 'shoulders', 'core'],
+  push: ['chest', 'shoulders', 'triceps'],
+  pull: ['back', 'biceps', 'shoulders'],
   legs: ['legs'],
-  hyp: ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'core']
+  hyp: ['chest', 'back', 'shoulders', 'biceps', 'triceps'],
+  core: ['core']
 };
-const sessionAllows = function (ses, k) { return !SESSION_MU[ses] || k === 'comp' || SESSION_MU[ses].indexOf(k) !== -1; };
+const sessionAllows = function (ses, k) { if (ses === 'core') return k === 'core'; return !SESSION_MU[ses] || k === 'comp' || SESSION_MU[ses].indexOf(k) !== -1; };
 
 // One-sided Tabata movements are done left then right, back to back.
 function sides(m) { return (m.unit === 'side' || /^Side plank$/.test(m.name)) ? ['left', 'right'] : ['']; }
