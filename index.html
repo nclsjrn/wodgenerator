@@ -645,6 +645,9 @@ const specPool = function (sp, fmt, rules) {
     if (ENDERS.indexOf(m.name) !== -1 || m.muscles[0] === 'cond') return false;
     if (rules && (rules.noPats.indexOf(m.pat) !== -1 || rules.noNames.indexOf(m.name) !== -1)) return false;
     if (rules && rules.noCompPats && sp.k === 'comp' && rules.noCompPats.indexOf(m.pat) !== -1) return false;
+    if (rules && rules.hingeOnly && m.pat === 'hinge' && rules.hingeOnly.indexOf(m.name) === -1) return false;
+    // A Set's compound stays free of hinges, so the compound slot is never only a deadlift or swing.
+    if (fmt === 'triset' && sp.k === 'comp' && m.pat === 'hinge') return false;
     if (rules && rules.noMuscles && rules.noMuscles.some(function (x) { return m.muscles.indexOf(x) !== -1; })) return false;
     if (sp.k === 'comp') return m.muscles.indexOf('comp') !== -1;
     if (m.muscles.indexOf(sp.k) === -1) return false;
@@ -690,27 +693,27 @@ const HARD_J = ['Burpee broad jumps', 'Treadmill sprints'];
 const PRESETS = {
   push: {
     label: 'Push', sel: ['chest', 'shoulders', 'triceps'], comp: true,
-    rules: { anyShoulder: true, noMuscles: ['legs'], noPats: ['jump'], noNames: ['Burpee box jump-overs'], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], maxPress: 1, maxHinge: 1, finNo: HARD_J },
+    rules: { needBig: ['chest'], anyShoulder: true, noMuscles: ['legs'], noPats: ['jump', 'hinge'], noNames: ['Burpee box jump-overs'], noCompPats: ['squat', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], maxPress: 1, maxHinge: 1, finNo: HARD_J },
     rpe: { std: 'RPE 7-8', hard: 'RPE 8-9' },
     note: 'Push session rules: at most one pressing and one hinging movement so the circuit stays light after bench, and no hard jumping or running so your legs are fresh for leg day.'
   },
   legs: {
     label: 'Legs', sel: ['legs', 'shoulders'], comp: true,
-    rules: { noPats: ['hinge', 'burpee', 'squatpress', 'gto'], noNames: [], shoulderWithLegs: true, finNo: IMPACT },
+    rules: { needBig: ['legs'], maxHinge: 1, hingeOnly: ['Kettlebell swings'], noPats: ['burpee', 'squatpress', 'gto'], noNames: [], shoulderWithLegs: true, finNo: IMPACT },
     rpe: { std: 'RPE 7', hard: 'RPE 8' },
-    note: 'Legs session: squats, lunges, jumps, holds and carries, plus shoulder movements that work the legs too (thrusters and push presses). No hinging, pressing or pulling on their own, and a low-impact finisher. Core and compound are optional.'
+    note: 'Legs session: squats, lunges, jumps, holds and carries, plus shoulder movements that work the legs too (thrusters and push presses). At most one hinge, and only kettlebell swings. No pressing or pulling on their own, and a low-impact finisher. Core and compound are optional.'
   },
   pull: {
     label: 'Pull', sel: ['back', 'biceps', 'shoulders'], comp: true,
-    rules: { anyShoulder: true, noMuscles: ['legs'], noPats: ['hinge', 'jump', 'burpee'], noNames: [], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], maxPress: 1, finNo: IMPACT },
+    rules: { needBig: ['back'], anyShoulder: true, noMuscles: ['legs'], noPats: ['jump', 'burpee', 'hinge'], noNames: [], noCompPats: ['squat', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], maxPress: 1, finNo: IMPACT },
     rpe: { std: 'RPE 7', hard: 'RPE 8' },
-    note: 'Pull session rules: no hinging, running or jumping after deadlifts, at most one pressing movement, and a low-impact finisher the day after HYROX.'
+    note: 'Pull session rules: no hinging, running or jumping, at most one pressing movement, and a low-impact finisher the day after HYROX.'
   },
   hyp: {
     label: 'Hypertrophy', sel: ['chest', 'back', 'shoulders', 'biceps', 'triceps'], comp: true,
-    rules: { needBig: ['chest', 'back'], noPats: ['hinge', 'jump', 'thruster', 'squatpress', 'gto', 'wallball', 'squat', 'lunge', 'single', 'calf', 'burpee'], noNames: ['Burpee box jump-overs'], noCompPats: ['squat', 'hinge', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], noMuscles: ['legs'], finNo: HARD_J },
+    rules: { needBig: ['chest', 'back'], maxHinge: 1, hingeOnly: ['Kettlebell swings'], noPats: ['jump', 'thruster', 'squatpress', 'gto', 'wallball', 'squat', 'lunge', 'single', 'calf', 'burpee'], noNames: ['Burpee box jump-overs'], noCompPats: ['squat', 'lunge', 'single', 'calf', 'jump', 'thruster', 'squatpress', 'squatrow', 'wallball', 'burpee', 'gto', 'pushpress'], noMuscles: ['legs'], finNo: HARD_J },
     rpe: { std: 'RPE 6-7', hard: 'RPE 7-8' },
-    note: 'Hypertrophy: upper-body movements for growth, at the reps you pick (10 or 12 works best). At least one big muscle (chest or back). No hinging, jumping or legs.'
+    note: 'Hypertrophy: upper-body movements for growth, at the reps you pick (10 or 12 works best). At least one big muscle (chest or back). At most one kettlebell swing. No jumping or legs.'
   },
   core: { label: 'Tabata', sel: ['core'], comp: false, rules: null },
   armtabata: { label: 'Arm Tabata', sel: ['triceps', 'biceps'], comp: false, rules: null }
@@ -866,7 +869,8 @@ const isWeighted = function (m) {
 const KB_KEEP = /^Kettlebell (swings|front squats|farmer's carry|gorilla rows)$/i;
 const rankOrder = {
   fortime: function (m) { return m.muscles[0] === 'cond' || m.muscles.indexOf('comp') !== -1 ? 0 : KB_KEEP.test(m.name) || eqOf(m) === 'db' ? 1 : eqOf(m) === 'bw' ? 3 : eqOf(m) === 'band' ? 4 : 5; },
-  other: function (m) { return KB_KEEP.test(m.name) ? 1 : eqOf(m) === 'db' ? 0 : eqOf(m) === 'plate' ? 2 : eqOf(m) === 'bw' ? 3 : eqOf(m) === 'band' ? 4 : 5; }
+  // Hinge movements (deadlifts, swings, good mornings) are a lesser choice, so they come up only some of the time.
+  other: function (m) { return m.pat === 'hinge' && !KB_KEEP.test(m.name) ? 2 : KB_KEEP.test(m.name) ? 1 : eqOf(m) === 'db' ? 0 : eqOf(m) === 'plate' ? 2 : eqOf(m) === 'bw' ? 3 : eqOf(m) === 'band' ? 4 : 5; }
 };
 const pickPref = function (pool, fmt) {
   const rank = rankOrder[fmt === 'fortime' ? 'fortime' : 'other'];
@@ -1626,6 +1630,8 @@ function eqChange(w) {
   return nw;
 }
 
+// Kettlebells only for these four movements. Every other exercise is done with dumbbells or barbell.
+for (let i = MOVES.length - 1; i >= 0; i--) { if (eqOf(MOVES[i]) === 'kb' && !KB_KEEP.test(MOVES[i].name)) MOVES.splice(i, 1); }
 /*DOM*/
 const $ = function (id) { return document.getElementById(id); };
 const state = { ctype: 'dyn', gloc: 'park', grnd: 4, hero: 'cindy', ses: 'custom', sel: ['chest', 'back'], comp: true, fmt: 'amrap', len: 10, cnt: 4, emomAuto: true, eq: EQ_ORDER.slice(), lvl: 'hard', reps: 10, w: null };
