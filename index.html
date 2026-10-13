@@ -679,8 +679,7 @@ const countFor = function (sel, comp, fmt, cnt, n, custom, auto) {
   if (fmt === 'emom') return emomCount(n, cnt, auto);
   if (fmt === 'triset') return Math.min(4, Math.max(2, cnt || 3));
   if (fmt === 'fortime') return Math.min(5, Math.max(3, cnt || 4));
-  const keys = sel.length + (comp ? 1 : 0);
-  return custom ? Math.min(7, Math.max(cnt || 3, keys)) : Math.min(5, Math.max(3, cnt || 4));
+  return custom ? Math.min(7, cnt || 3) : Math.min(5, Math.max(3, cnt || 4));
 };
 
 // Pressing patterns, used by the session rules that limit pressing after bench or before it.
@@ -1637,8 +1636,13 @@ const $ = function (id) { return document.getElementById(id); };
 const state = { ctype: 'dyn', gloc: 'park', grnd: 4, hero: 'cindy', ses: 'custom', sel: ['chest', 'back'], comp: true, fmt: 'amrap', len: 10, cnt: 4, emomAuto: true, eq: EQ_ORDER.slice(), lvl: 'hard', reps: 10, w: null };
 const KEY = 'mini-pump-generator-4';
 const maxMu = function () {
-  const eff = state.fmt === 'emom' ? emomCount(state.len, state.cnt, state.emomAuto) : state.cnt;
-  return 5;
+  return state.ses === 'custom' ? keyCap() : 5;
+};
+// Custom: muscles plus compound can never be more than the movement count set.
+const keyCap = function () { return state.fmt === 'emom' ? emomCount(state.len, state.cnt, state.emomAuto) : state.cnt; };
+const keyCount = function () { return state.sel.length + (state.comp ? 1 : 0); };
+const trimToCap = function () {
+  while (keyCount() > keyCap()) { if (state.sel.length) state.sel = state.sel.slice(0, -1); else state.comp = false; }
 };
 
 try {
@@ -1690,6 +1694,8 @@ function setStatus(msg) {
 
 function toggleMuscle(k) {
   if (!sessionAllows(state.ses, k)) { setStatus('That session is fixed to its own muscles. Use Custom to mix others in.'); return; }
+  const adding = k === 'comp' ? !state.comp : state.sel.indexOf(k) === -1;
+  if (state.ses === 'custom' && adding && keyCount() >= keyCap()) { setStatus('This workout has ' + keyCap() + ' movements, so pick at most ' + keyCap() + ' muscles and compound. Raise Movements to add more.'); return; }
   if (k === 'comp') {
     state.comp = !state.comp;
   } else if (state.sel.indexOf(k) !== -1) {
@@ -1744,7 +1750,9 @@ function renderControls() {
   CORE_TYPE = state.ctype;
   $('fld-core').hidden = !tabata;
   if (tabata) segment($('seg-core'), [['core', 'Core'], ['armtabata', 'Arms']], state.ses, pickSession);
-  $('lbl-core').textContent = 'Tabata type';
+  $('lbl-core').textContent = 'Body part';
+  // Tabata has its own body part choice, so the muscle picker is hidden.
+  $('seg-mu').parentElement.hidden = tabata;
   const hero = state.ses === 'hero';
   const special = hero || gor;
   $('fld-gor').hidden = !gor;
@@ -1769,7 +1777,7 @@ function renderControls() {
     segment($('seg-rnd'), [[3, '3'], [4, '4'], [5, '5']], state.grnd, function (v) { state.grnd = v; save(); if (state.w && state.w.gor) { state.w.rounds = v; renderGorilla(); } renderControls(); });
   }
   $('fld-hero').hidden = !hero;
-  $('seg-mu').parentElement.hidden = special;
+  $('seg-mu').parentElement.hidden = special || tabata;
   $('seg-eq').parentElement.hidden = special;
   $('btn-clear').hidden = special;
   if (hero) segment($('seg-hero'), HEROES.map(function (h) { return [h.k, h.name]; }), state.hero, pickHero);
@@ -1816,6 +1824,7 @@ function renderControls() {
   segment($('seg-cnt'), cntOptions, locked ? 3 : state.cnt, function (v) {
     if (locked) return;
     state.cnt = v;
+    trimToCap();
     save(); renderControls(); applySettings('cnt');
   });
   if (locked) $('seg-cnt').querySelectorAll('button').forEach(function (b) { b.disabled = b.getAttribute('aria-pressed') !== 'true'; });
@@ -2118,6 +2127,8 @@ function applySettings(changed) {
     return;
   }
   if (state.ses === 'hero' || state.ses === 'gorilla') { keepWorkout(); return; }
+  // Custom: picking or unpicking a muscle builds the workout straight away.
+  if (changed === 'mu' && state.ses === 'custom') { regenerate(); return; }
   const w = state.w;
   setEq(state.eq);
   // Core intervals: unticking gear only removes the movements that need it and tops the circuit back up; the rest stay.
