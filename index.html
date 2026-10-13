@@ -75,6 +75,8 @@ h1 { margin: 6px 0 4px; font: 700 2rem/1.05 var(--font-display); letter-spacing:
 .seg button:hover:not([aria-pressed="true"]) { background: var(--surface); }
 .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
 .seg button.clear { flex: 0 0 auto; color: var(--muted); text-decoration: underline; }
+/* Equipment boxes: three to a row. A short last row stretches so its boxes fill the full width. */
+#seg-eq button { flex: 1 1 calc((100% - 8px) / 3); min-width: 0; padding: 6px 8px; }
 .btn.wide { flex: 1 1 100%; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .empty { margin: 0; padding-block: 18px; color: var(--muted); font: 600 1.1rem/1.3 var(--font-body); }
@@ -1707,6 +1709,13 @@ function toggleMuscle(k) {
   save(); renderControls(); applySettings('mu');
 }
 
+// Does this gear have any movement for the muscles picked (or the compound)? With nothing picked, every gear shows.
+function gearHasMoves(k) {
+  if (!state.sel.length && !state.comp) return true;
+  return MOVES.some(function (m) {
+    return eqOf(m) === k && (state.sel.some(function (x) { return m.muscles.indexOf(x) !== -1; }) || (state.comp && m.muscles.indexOf('comp') !== -1));
+  });
+}
 function toggleEq(k) {
   PREV_EQ = state.eq.slice();
   if (state.eq.indexOf(k) !== -1) {
@@ -1795,11 +1804,12 @@ function renderControls() {
   $('btn-clear').disabled = !state.sel.length && !state.comp;
   const eqBox = $('seg-eq');
   eqBox.innerHTML = '';
-  EQ_ORDER.forEach(function (k) {
+  // Gear boxes are listed alphabetically by name; the order of use is unchanged.
+  EQ_ORDER.slice().sort(function (a, b) { return EQ_NAMES[a].localeCompare(EQ_NAMES[b]); }).forEach(function (k) {
     // Arm Tabata is barbell, EZ-bar or dumbbell only.
     if (state.ses === 'armtabata' && k !== 'bb' && k !== 'db') return;
-    // Core only: skip gear with no movements of the chosen kind (dynamic, static or mix).
-    if (isCoreOnly(state.sel, state.comp) && !MOVES.some(function (m) { return m.muscles.indexOf('core') !== -1 && eqOf(m) === k; })) return;
+    // Gear with no movement for the chosen muscles (or the compound) is left out.
+    if (!gearHasMoves(k)) return;
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = EQ_NAMES[k];
@@ -1842,8 +1852,10 @@ function renderControls() {
   }
 }
 
+// Compound movements are tagged with the body part they mainly work: Compound · Legs, Compound · Shoulders, Compound · Full body.
+const COMP_PART = { squat: 'Legs', squatpress: 'Legs', squatrow: 'Legs', lunge: 'Legs', single: 'Legs', calf: 'Legs', hinge: 'Legs', thruster: 'Legs', wallball: 'Legs', jump: 'Legs', gto: 'Shoulders', burpee: 'Full body', slam: 'Full body', carry: 'Full body' };
 function tagOf(m, k) {
-  if (k === 'comp') return 'Compound';
+  if (k === 'comp') return 'Compound · ' + (COMP_PART[m.pat] || 'Full body');
   return NAMES[k] || k;
 }
 
