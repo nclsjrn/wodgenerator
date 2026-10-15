@@ -297,10 +297,7 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
     <span class="tm-strip-time"><span id="tm-strip-time" aria-live="off">0:00</span><span class="tm-strip-sub" id="tm-strip-sub"></span></span>
   </div>
   <header>
-    <p class="eyebrow">Mini-pump</p>
     <h1>Workout generator</h1>
-    <p class="lede">Pick a session with its rules, a Gorilla bodyweight circuit, a famous Hero benchmark, or mix your own muscle groups and an optional compound into one circuit. Countdown timer included.</p>
-    <p class="lede"><a href="https://claude.ai/artifact/Qn3sRLS2omYp6yGcEPhdxC" target="_blank" rel="noopener">Open the training log</a></p>
   </header>
 
   <details class="setup" id="setup" open>
@@ -325,7 +322,6 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
 
   <section class="panel" id="logbox" aria-label="Log result" hidden>
     <h3>Log this workout</h3>
-    <p class="help" id="log-help"></p>
     <div class="loglines" id="log-lines"></div>
     <div class="log-add"><button class="btn ghost" id="log-add" type="button">+ Add movement</button></div>
     <label>Note (optional)<input id="log-note" type="text" autocomplete="off" placeholder="Weights used, how it felt"></label>
@@ -402,6 +398,7 @@ back,biceps|Underhand band rows|15|reps|row
 back,biceps|Supinated single-arm dumbbell rows|8|side|row
 back|Kettlebell gorilla rows|8|side|row
 triceps|Overhead dumbbell triceps extensions|12|reps|extension
+triceps|Bench triceps extensions|12|reps|extension
 triceps|Band overhead triceps extensions|15|reps|extension
 triceps|Ring triceps extensions|8|reps|extension
 triceps|Dumbbell skull crushers|12|reps|skull
@@ -430,6 +427,7 @@ chest|Band chest flyes|15|reps|fly
 chest|Medicine-ball chest passes|10|reps|pass
 chest,triceps|Clap push-ups|5|reps|pass
 shoulders|Dumbbell shoulder press|10|reps|press
+shoulders|Single-arm dumbbell overhead press|8|side|press
 shoulders|Seated dumbbell shoulder press|10|reps|press
 shoulders|Seated alternating dumbbell press|12|reps|press
 shoulders|Seated Arnold press|10|reps|press
@@ -483,6 +481,7 @@ core|Hollow hold|30|s|hollow
 core|Scissor kicks|30|reps|legraise
 core|Plank jacks|20|reps|plank
 core|Bear crawl shoulder taps|20|reps|plank
+core|Mountain climbers|20|reps|plank
 back|Pull-ups|5|reps|vertical
 back|Commando pull-ups|6|side|vertical
 back|Scapular pull-ups|10|reps|vertical
@@ -503,6 +502,7 @@ back|Good mornings|10|reps|hinge
 legs,back|Dumbbell Romanian deadlifts|10|reps|hinge
 back,legs|Kettlebell deadlifts|12|reps|hinge
 back|Superman hold|30|s|hold
+back|Dead hang|20|s|hold
 legs|Goblet squats|10|reps|squat
 legs|Plate squats|12|reps|squat
 legs|Air squats|15|reps|squat
@@ -517,6 +517,7 @@ legs|Alternating lunges|12|side|lunge
 legs|Walking lunges|16|reps|lunge
 legs|Sandbag lunges|10|reps|lunge
 legs|Lateral lunges|8|side|lunge
+legs|Dumbbell stationary lunges|8|side|lunge
 legs|Curtsy lunges|8|side|lunge
 legs|Bulgarian split squats|8|side|single
 legs|Cossack squats|8|side|single
@@ -525,6 +526,8 @@ legs|Dumbbell step-ups|10|side|single
 legs|Box step-overs|10|reps|single
 legs|Single-leg Romanian deadlifts|8|side|hinge
 legs|Hip thrusts|12|reps|hinge
+legs|Glute bridges|12|reps|hinge
+legs|Glute bridge hold|30|s|hold
 legs|Single-leg glute bridges|10|side|hinge
 legs|Dumbbell hamstring bridges|12|reps|bridge
 legs|Single-leg dumbbell hamstring bridges|10|side|bridge
@@ -535,6 +538,7 @@ legs|Band leg extensions|15|reps|legext
 legs|Single-leg band leg extensions|12|side|legext
 legs|Band leg curls|12|reps|legcurl
 legs|Single-leg band leg curls|12|side|legcurl
+legs|Nordic hamstring curls|5|reps|legcurl
 legs,comp|Kettlebell swings|15|reps|hinge
 legs|Calf raises|20|reps|calf
 legs|Single-leg calf raises|12|side|calf
@@ -545,6 +549,7 @@ chest|Barbell incline bench press|8|reps|angle
 chest|Dumbbell bench press|10|reps|press
 chest|Incline dumbbell bench press|10|reps|angle
 chest|Incline dumbbell flyes|12|reps|fly
+chest|Flat dumbbell flyes|12|reps|fly
 chest,triceps|Barbell close-grip bench press|8|reps|closepress
 triceps|Barbell skull crushers|10|reps|skull
 triceps|Kettlebell overhead triceps extensions|12|reps|extension
@@ -591,6 +596,7 @@ comp|Dumbbell squat-to-press|8|reps|squatpress
 comp|Dumbbell ground-to-overhead|6|reps|gto
 comp|Alternating dumbbell ground-to-overhead|8|side|gto
 comp|Sumo deadlift high pull|10|reps|hinge
+comp|Dumbbell snatches|8|side|hinge
 comp|Slam ball slams|10|reps|slam
 comp|Slam ball rotational slams|10|reps|slam
 comp|Burpee box jump-overs|8|reps|burpee
@@ -762,8 +768,8 @@ const shuffle = function (a) {
 const isTimed = function (m) { return m.unit !== 'reps' && m.unit !== 'side'; };
 
 // Equipment: every movement needs one kind of gear. The Equipment row filters the main circuit (the finisher is not filtered).
-const EQ_ORDER = ['db', 'bb', 'kb', 'band', 'bw', 'ball', 'sandbag', 'plate'];
-const EQ_NAMES = { db: 'Dumbbells', bb: 'Barbells', kb: 'Kettlebells', band: 'Bands', bw: 'Bodyweight', ball: 'Slam & medicine balls', sandbag: 'Sandbags', plate: 'Plates' };
+const EQ_ORDER = ['db', 'bb', 'kb', 'band', 'bw', 'pullup', 'ball', 'sandbag', 'plate'];
+const EQ_NAMES = { db: 'Dumbbells', bb: 'Barbells', kb: 'Kettlebells', band: 'Bands', bw: 'Bodyweight', pullup: 'Pull-up bar', ball: 'Slam & medicine balls', sandbag: 'Sandbags', plate: 'Plates' };
 let PREV_EQ = EQ_ORDER.slice();
 let ACTIVE_EQ = EQ_ORDER.slice();
 const setEq = function (a) { ACTIVE_EQ = a.slice(); };
@@ -778,6 +784,7 @@ function eqOf(m) {
     else if (/Barbell|Pendlay|Landmine/i.test(n)) e = 'bb';
     else if (/Sandbag/i.test(n)) e = 'sandbag';
     else if (/Plate/i.test(n)) e = 'plate';
+    else if (/pull-ups?|chin-ups?|chin-up hold|pull-up hold|Commando|Hanging|Toes-to-bar|Alternating-grip|Dead hang/i.test(n)) e = 'pullup';
     else if (/Slam|Wall balls|Medicine|\bball/i.test(n)) e = 'ball';
     else e = loadFor(m) ? 'db' : 'bw';
     eqCache[n] = e;
@@ -840,6 +847,7 @@ const countFor = function (sel, comp, fmt, cnt, n, custom, auto) {
   if (fmt === 'emom') return emomCount(n, cnt, auto);
   if (fmt === 'triset') return Math.min(4, Math.max(2, cnt || 3));
   if (fmt === 'fortime') return Math.min(5, Math.max(3, cnt || 4));
+  if (fmt === 'amrap') return Math.min(5, Math.max(3, cnt || 3));
   return custom ? Math.min(7, cnt || 3) : Math.min(5, Math.max(3, cnt || 4));
 };
 
@@ -1040,9 +1048,9 @@ const isWeighted = function (m) {
 // Dumbbells first for every exercise, except these kettlebell movements, which keep their kettlebell.
 const KB_KEEP = /^Kettlebell (swings|front squats|farmer's carry|gorilla rows|goblet squats)$/i;
 const rankOrder = {
-  fortime: function (m) { return m.muscles[0] === 'cond' || m.muscles.indexOf('comp') !== -1 ? 0 : KB_KEEP.test(m.name) ? 0 : eqOf(m) === 'db' ? 1 : eqOf(m) === 'bw' ? 3 : eqOf(m) === 'band' ? 4 : 5; },
+  fortime: function (m) { return m.muscles[0] === 'cond' || m.muscles.indexOf('comp') !== -1 ? 0 : KB_KEEP.test(m.name) ? 0 : eqOf(m) === 'db' ? 1 : eqOf(m) === 'bw' || eqOf(m) === 'pullup' ? 3 : eqOf(m) === 'band' ? 4 : 5; },
   // Hinge movements (deadlifts, swings, good mornings) are a lesser choice, so they come up only some of the time.
-  other: function (m) { return KB_KEEP.test(m.name) && m.muscles.indexOf('comp') === -1 ? 0 : m.pat === 'hinge' ? 2 : m.pat === 'carry' ? 2 : eqOf(m) === 'db' ? 1 : eqOf(m) === 'plate' ? 2 : eqOf(m) === 'bw' ? 3 : eqOf(m) === 'band' ? 4 : 5; }
+  other: function (m) { return KB_KEEP.test(m.name) && m.muscles.indexOf('comp') === -1 ? 0 : m.pat === 'hinge' ? 2 : m.pat === 'carry' ? 2 : eqOf(m) === 'db' ? 1 : eqOf(m) === 'plate' ? 2 : eqOf(m) === 'bw' || eqOf(m) === 'pullup' ? 3 : eqOf(m) === 'band' ? 4 : 5; }
 };
 // Bands are the last resource: a band movement is picked only when nothing else fits the slot.
 const isBand = function (m) { return eqOf(m) === 'band'; };
@@ -1059,7 +1067,10 @@ const pickPref = function (pool, fmt) {
 };
 
 // For time: rounds depend only on the chosen length, and it always uses the base (Medium) reps.
-const TRISET_ROUND = 150;
+// Each round's clock by set type: superset 2:30, triset 3:00, megaset 3:30.
+const TRISET_ROUND = { 2: 150, 3: 180, 4: 210 };
+const clockOf = function (s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const roundSecs = function (w) { return TRISET_ROUND[w.items.length] || 180; };
 const FT_ROUNDS = { 10: 8, 15: 12, 20: 16 };
 
 // Finisher: one HYROX, ATHX or jump rope conditioning movement, different from the main circuit.
@@ -1153,6 +1164,7 @@ function reorderComp(w) {
   const move = function (arr) { const x = arr.splice(i, 1)[0]; arr.splice(pos, 0, x); return arr; };
   w.items = move(w.items.slice());
   w.spec = move(w.spec.slice());
+  holdsLast(w);
 }
 
 // Order inside every workout: barbell moves for big muscles or compounds first, then compound dumbbell moves, then other compounds,
@@ -1161,8 +1173,19 @@ function reorderComp(w) {
 // Single-muscle isolation work: calves, hamstring bridges and band leg work. Never leads, never counts as the big muscle.
 const ISOLATION = ['calf', 'bridge', 'legext', 'legcurl'];
 const SIZE_RANK = { legs: 3, back: 3, chest: 4, shoulders: 5, triceps: 6, biceps: 6, core: 7 };
+// Holds (static movements, any muscle) and Nordic curls (need a partner) always go last, after any carry. Gorilla is left as it is.
+const HOLD_RE = /hold|Side plank|Wall sits|Nordic/i;
+function holdsLast(w) {
+  if (!w || !w.items || w.gor) return w;
+  const idx = w.items.map(function (m, i) { return i; });
+  const isH = function (i) { return HOLD_RE.test(w.items[i].name); };
+  const order = idx.filter(function (i) { return !isH(i); }).concat(idx.filter(isH));
+  w.items = order.map(function (i) { return w.items[i]; });
+  if (w.spec && w.spec.length === order.length) w.spec = order.map(function (i) { return w.spec[i]; });
+  return w;
+}
 function orderBySize(w) {
-  if (!w || !w.spec || !w.items || w.fmt === 'tabata' || w.hero || w.gor) return w;
+  if (!w || !w.spec || !w.items || w.fmt === 'tabata' || w.hero || w.gor) return holdsLast(w);
   const rank = function (i) {
     const m = w.items[i], x = w.spec[i] || {};
     if (m.pat === 'carry') return 8;
@@ -1177,7 +1200,7 @@ function orderBySize(w) {
   const idx = w.items.map(function (m, i) { return i; }).sort(function (a, b) { return rank(a) - rank(b) || a - b; });
   w.items = idx.map(function (i) { return w.items[i]; });
   w.spec = idx.map(function (i) { return w.spec[i]; });
-  return w;
+  return holdsLast(w);
 }
 
 // One workout in 50 may carry a second compound, which is always a carry at the end. DBL is set per workout and kept on it for swaps.
@@ -1206,7 +1229,7 @@ function generateOnce(sel, comp, fmt, n, reps, cnt, preset, auto) {
   if (isCoreOnly(sel, comp)) {
     const t = buildTabata();
     if (!t) return null;
-    return tabataShape({ sel: sel, comp: comp, preset: preset, rules: null, extra: 0, loose: !valid(t, null, 'tabata', 4), skipped: [], fmt: 'tabata', n: null, lvl: 'std', spec: [], items: t, fin: null });
+    return holdsLast(tabataShape({ sel: sel, comp: comp, preset: preset, rules: null, extra: 0, loose: !valid(t, null, 'tabata', 4), skipped: [], fmt: 'tabata', n: null, lvl: 'std', spec: [], items: t, fin: null }));
   }
   const av = availableKeys(sel, comp, fmt, rules);
   if (!av.sel.length && !av.comp) return null;
@@ -1263,7 +1286,7 @@ function addOne(w) {
     for (const cand of cands) {
       const items = w.items.concat([cand]);
       const spec = w.spec.concat([{ k: k, slot: null }]);
-      if (valid(items, spec, w.fmt, items.length, true, w.rules, w.extra)) { w.items = items; w.spec = spec; return true; }
+      if (valid(items, spec, w.fmt, items.length, true, w.rules, w.extra)) { w.items = items; w.spec = spec; holdsLast(w); return true; }
     }
   }
   return false;
@@ -1280,6 +1303,7 @@ function repairFor(w) {
     if (!c.length) return false;
     w.items = w.items.slice(); w.items[i] = c[0];
   }
+  holdsLast(w);
   return true;
 }
 function fitCount(w, T) {
@@ -1366,12 +1390,14 @@ function repRange(m, lvl, floor) {
   return lo + '-' + (lo + add);
 }
 
+// Dumbbell snatches are counted as reps per side; other one-sided reps stay "per side".
+const sideLabel = function (m) { return /snatch/i.test(m.name) ? 'reps per side' : 'per side'; };
 function amount(m, w) {
   if (w.fmt === 'tabata') return { n: w.work, u: 'sec on' };
-  if (w.fmt === 'triset') return { n: repsFor(m, w), u: m.unit === 'side' ? 'per side' : 'reps' };
+  if (w.fmt === 'triset') return { n: repsFor(m, w), u: m.unit === 'side' ? sideLabel(m) : 'reps' };
   const v = repsFor(m, w);
   if (m.unit === 'reps') return { n: v, u: 'reps' };
-  if (m.unit === 'side') return { n: v, u: 'per side' };
+  if (m.unit === 'side') return { n: v, u: sideLabel(m) };
   if (m.unit === 's') return { n: w.fmt === 'emom' ? Math.min(v, 45) : v, u: 'sec' };
   if (m.unit === 's side') return { n: w.fmt === 'emom' ? Math.min(v, 45) : v, u: 'sec per side' };
   if (m.unit === 'm') return { n: v, u: 'm' };
@@ -1397,7 +1423,7 @@ function titleOf(w) {
   const names = { amrap: 'AMRAP', emom: 'EMOM' };
   if (w.fmt === 'tabata' && w.arm) return 'Arm · Tabata';
   if (w.fmt === 'tabata') return 'Core · ' + ({ dyn: 'dynamic', stat: 'static', mix: 'mix' }[w.ctype || 'mix']) + ' · Tabata';
-  if (w.fmt === 'triset') return w.rounds + '-round ' + ({ 2: 'SUPERSET', 3: 'TRISET', 4: 'MEGA SET' }[w.items.length] || 'SET');
+  if (w.fmt === 'triset') return w.rounds + '-round ' + ({ 2: 'SUPERSET', 3: 'TRISET', 4: 'MEGASET' }[w.items.length] || 'SET');
   if (w.fmt === 'fortime') return w.rounds + ' rounds FT';
   return w.n + '-min ' + names[w.fmt];
 }
@@ -1417,7 +1443,8 @@ function howOf(w) {
   if (w.fmt === 'emom') return lab + '. Start a movement at the top of each minute and rest for what is left. ' + 'Cycle through all ' + cnt + '.';
   if (w.fmt === 'triset') {
     const hard = w.lvl === 'hard';
-    return lab + '. Every round starts on a 2:30 clock. Do all of them back to back, then rest for what is left. Repeat for ' + w.rounds + ' rounds (' + (w.rounds * 2.5) + ' min). Pick a load that leaves about ' + (hard ? '1 rep' : '2 reps') + ' in reserve.';
+    const secs = roundSecs(w);
+    return lab + '. Every round starts on a ' + clockOf(secs) + ' clock. Do all of them back to back, then rest for what is left. Repeat for ' + w.rounds + ' rounds (' + (w.rounds * secs / 60) + ' min). Pick a load that leaves about ' + (hard ? '1 rep' : '2 reps') + ' in reserve.';
   }
   return lab + '. Complete ' + w.rounds + ' rounds of all ' + cnt + ' as fast as you can, in order. Time cap ' + w.n + ' min.';
 }
@@ -1708,7 +1735,9 @@ const LOADS = [
   [/Kettlebell (goblet|thrusters|Romanian|reverse lunges|Bulgarian)/i, '12-24 kg'],
   [/kettlebell rows/i, '16-24 kg'],
   [/Dumbbell bench press|Incline dumbbell bench/i, '15-25 kg each hand'],
-  [/Incline dumbbell flyes/i, '8-14 kg each hand'],
+  [/Incline dumbbell flyes|Flat dumbbell flyes/i, '8-14 kg each hand'],
+  [/Single-arm dumbbell overhead press/i, '10-16 kg each hand'],
+  [/Dumbbell stationary lunges/i, '10-18 kg each hand'],
   [/Close-grip dumbbell/i, '10-18 kg each hand'],
   [/Dumbbell shoulder press|Alternating dumbbell press/i, '10-16 kg each hand'],
   [/Arnold/i, '8-14 kg each hand'],
@@ -1737,6 +1766,7 @@ const LOADS = [
   [/Renegade/i, '8-14 kg each hand'],
   [/Single-arm dumbbell rows/i, '14-22 kg'],
   [/(Bent-over|Chest-supported) dumbbell rows/i, '12-20 kg each hand'],
+  [/Nordic/i, ''],
   [/curls/i, '8-14 kg each hand'],
   [/triceps extensions/i, '10-18 kg, one dumbbell'],
   [/skull crushers/i, '6-12 kg each hand'],
@@ -1815,7 +1845,7 @@ function phasesFor(w) {
     ph.push({ label: w.rounds + ' rounds for time', sec: w.n * 60, up: true, counter: true, text: all });
   } else if (w.fmt === 'triset') {
     for (let r = 0; r < w.rounds; r++) {
-      ph.push({ label: 'Round ' + (r + 1) + ' of ' + w.rounds, sec: TRISET_ROUND, text: all + ' · rest for what is left' });
+      ph.push({ label: 'Round ' + (r + 1) + ' of ' + w.rounds, sec: roundSecs(w), text: all + ' · rest for what is left' });
     }
   } else if (w.fmt === 'tabata') {
     const rows = rowsOf(w);
@@ -1893,7 +1923,8 @@ try {
     if (lengthsFor(state.fmt).indexOf(state.len) === -1) state.len = lengthsFor(state.fmt)[0];
     if ([3, 4, 5, 6].indexOf(saved.cnt) !== -1) state.cnt = saved.cnt;
     if (saved.emomAuto === false) state.emomAuto = false;
-    if (Array.isArray(saved.eq) && saved.eq.indexOf('other') === -1) { const e = EQ_ORDER.filter(function (k) { return saved.eq.indexOf(k) !== -1; }); if (e.length) state.eq = e; }
+    // Pull-up bar is new: saved settings without it keep it switched on.
+    if (Array.isArray(saved.eq) && saved.eq.indexOf('other') === -1) { const e = EQ_ORDER.filter(function (k) { return saved.eq.indexOf(k) !== -1 || k === 'pullup'; }); if (e.length) state.eq = e; }
     if (saved.lvl === 'std' || saved.lvl === 'hard') state.lvl = saved.lvl;
     if (REPS_OPTS.indexOf(saved.reps) !== -1) state.reps = saved.reps;
   }
@@ -2041,9 +2072,11 @@ function renderControls() {
     eqBox.appendChild(b);
   });
   segment($('seg-fmt'), [['amrap', 'AMRAP'], ['emom', 'EMOM'], ['fortime', 'FT'], ['triset', 'SET']], state.fmt, function (v) {
+    // Tapping the format already selected changes nothing: the workout and its movement count stay.
+    if (v === state.fmt) return;
     state.fmt = v;
     // Switching format lands on the lowest movement count for that format (EMOM has a fixed count).
-    if (v === 'triset') state.cnt = 2;
+    if (v === 'triset') state.cnt = 3;
     else if (v === 'amrap' || v === 'fortime') state.cnt = 3;
     // EMOM always lands on its shortest length (9 min).
     else if (v === 'emom') state.len = EMOM_LENGTHS[0];
@@ -2051,8 +2084,8 @@ function renderControls() {
   });
   const emom = state.fmt === 'emom';
   const setFmt = state.fmt === 'triset';
-  const counts = setFmt ? [2, 3, 4] : state.fmt === 'fortime' ? [3, 4, 5] : (state.ses === 'custom' ? [3, 4, 5, 6] : [3, 4, 5]);
-  const SET_NAMES = { 2: 'Superset', 3: 'Triset', 4: 'Mega set' };
+  const counts = setFmt ? [2, 3, 4] : state.fmt === 'fortime' || state.fmt === 'amrap' ? [3, 4, 5] : (state.ses === 'custom' ? [3, 4, 5, 6] : [3, 4, 5]);
+  const SET_NAMES = { 2: 'Superset', 3: 'Triset', 4: 'Megaset' };
   const cntOptions = counts.map(function (n) { return [n, setFmt ? SET_NAMES[n] : String(n)]; });
   segment($('seg-cnt'), cntOptions, locked ? 3 : state.cnt, function (v) {
     if (locked) return;
@@ -2308,8 +2341,8 @@ function renderTimerTime() {
 function tmStripFormat() {
   const w = state.w, cnt = $('tm-strip-count'), sub = $('tm-strip-sub');
   cnt.hidden = true; sub.textContent = '';
-  // EMOM and AMRAP keep the countdown and their count on one line; For Time and Triset keep the count below.
-  sub.parentNode.classList.toggle('inline', !!w && (w.fmt === 'emom' || w.fmt === 'amrap'));
+  // EMOM, AMRAP and Triset keep the countdown and their count on one line; For Time keeps the count below.
+  sub.parentNode.classList.toggle('inline', !!w && (w.fmt === 'emom' || w.fmt === 'amrap' || w.fmt === 'triset'));
   if (!tm || tm.done || !w || w.hero || w.gor) return;
   if (w.fmt === 'amrap' || w.fmt === 'fortime') {
     cnt.hidden = false; cnt.textContent = '+1';
@@ -2595,7 +2628,6 @@ function openLog() {
   const w = state.w;
   if (!w) return;
   const kind = resultKind(w);
-  $('log-help').textContent = kind === 'time' ? 'Your finish time as minutes:seconds, for example 12:34.' : (kind === 'amrap' ? 'Rounds, then extra reps, for example 7 + 5.' : 'Anything you want to remember: rounds done, the minute you reached, loads.');
   let pre = '';
   if (tm) {
     if (kind === 'time' && tm.lastUp !== undefined) pre = mmssOf(tm.lastUp);
