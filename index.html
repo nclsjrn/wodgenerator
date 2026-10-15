@@ -92,8 +92,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mvs { list-style: none; margin: 10px 0 0; padding: 0; }
 .fin-head { margin: 18px 0 0; padding-top: 14px; border-top: 3px solid var(--ink); font: 600 0.78rem/1 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .mv { display: grid; grid-template-columns: minmax(5.25rem, auto) minmax(0, 1fr) auto; align-items: center; gap: 14px; padding-block: 14px; border-bottom: 1px solid var(--rule); }
-.rx { display: flex; flex-direction: column; }
-.rx .n { font: 700 2.5rem/0.9 var(--font-display); color: var(--rep); font-variant-numeric: tabular-nums; }
+.rx { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.rx .n { font: 700 1.9rem/0.9 var(--font-display); color: var(--rep); font-variant-numeric: tabular-nums; }
 .rx .u { margin-top: 4px; font: 600 0.7rem/1.1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .mv .body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mv .tag { font: 600 0.72rem/1.2 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -127,7 +127,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .appbar > #fld-train .seg { display: flex; flex: 1 1 100%; padding: 0; background: transparent; }
 .appbar:has(#fld-train:not([hidden])) { grid-template-columns: 1fr 1.5fr 1.5fr; }
 /* New workout (grey) and Start timer (indigo) share the row with Training. */
-.appbar > #btn-new { background: #3d474d; color: #fff; }
+.appbar > #btn-new { background: #5a646b; color: #fff; }
 .appbar .timer-start .btn.go { background: var(--accent); color: var(--on-accent); }
 /* While the timer runs (not after it finishes), the bottom bar hides and a strip in the header holds Log and Reset. */
 body.timer-running .appbar { display: none; }
@@ -148,7 +148,7 @@ body.timer-running header { position: static; }
 .appbar > #btn-new, .appbar .timer-start .btn { min-height: 60px; font-size: 0.88rem; }
 .appbar .act-row .btn.ghost { min-height: 60px; }
 .appbar .act-row .btn.ghost.tab { min-height: 60px; font-size: 0.88rem; letter-spacing: -0.01em; padding: 0; background: #fff; }.appbar .act-row { gap: 4px; }
-.appbar .timer-start .btn.go { min-height: 60px; font-size: 0.88rem; letter-spacing: 0.06em; }
+.appbar .timer-start .btn.go { min-height: 60px; font-size: 0.8rem; letter-spacing: 0; font-weight: 700; border: 2px solid #2d3690; }
 @media (prefers-color-scheme: dark) { .appbar .act-row .btn.ghost.tab { background: var(--surface); } }
 /* When the timer is done (no Start button), New workout takes the rest of the row. */
 .appbar:has(#fld-train:not([hidden])):has(.timer-start:empty) > #btn-new { grid-column: 2 / -1; }
@@ -191,7 +191,7 @@ body.timer-running header { position: static; }
 @media (max-width: 420px) {
   .tm-time { font-size: 4.2rem; }
   .sheet h2 { font-size: 2.5rem; }
-  .rx .n { font-size: 2.2rem; }
+  .rx .n { font-size: 1.9rem; }
   .mv { gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -221,7 +221,7 @@ body.timer-running header { position: static; }
 .loglines .lr, .loglines .lk { text-align: center; }
 .loglines .lt { justify-self: center; width: 24px; height: 24px; accent-color: var(--accent); }
 [hidden] { display: none !important; }
-.tm-flash { animation: tmflash 0.6s ease-out; }
+.tm-flash { animation: none; }
 .timer:empty { display: none; }
 @keyframes tmflash { from { background-color: color-mix(in srgb, var(--go) 45%, var(--surface)); } to { background-color: var(--surface); } }
 .hist-acts { grid-row: 2; grid-column: 2; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
@@ -242,18 +242,10 @@ header h1 { margin: 2px 0 0; font-size: 1.7rem; }
 .setup[open] > summary { margin-bottom: 12px; }
 body.compact header { padding-top: calc(env(safe-area-inset-top) + 6px); padding-bottom: 6px; }
 body.compact header .eyebrow, body.compact header .lede { display: none; }
-body.compact header h1 { font-size: 1.25rem; }
 /* Tighter workout rows while the options are folded, so the whole workout fits on the screen. */
-body.compact .sheet h2 { font-size: 1.9rem; }
-body.compact .mv { padding-block: 6px; gap: 10px; }
-body.compact .mv .name { font-size: 1rem; line-height: 1.15; }
-body.compact .mv .tag { font-size: 0.66rem; }
-body.compact .mvs { margin-top: 4px; }
-body.compact .sheet { padding-top: 6px; gap: 2px; }
 body.compact .setup > summary { min-height: 42px; }
 body.compact .setup { margin-bottom: 0; }
 body.compact .wrap > * + * { margin-top: 0; }
-body.compact .mv .body { gap: 0; }
 body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
 .controls, .sheet, .panel, .timer { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 16px; }
 .sheet, .panel, .timer { border-top: 1px solid var(--rule); }
@@ -263,10 +255,8 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
 .seg button:active:not(:disabled), .btn:active:not(:disabled) { transform: scale(0.96); }
 .btn { min-height: 48px; border-radius: 14px; }
 .seg button { min-height: 40px; border-radius: 9px; }
-.btn.primary, .btn.go { box-shadow: 0 6px 16px -8px var(--accent); }
 #seg-ses { display: grid; grid-template-columns: repeat(4, auto); justify-content: stretch; }
-#seg-ses button { flex: none; min-width: 0; padding: 0 6px; font-size: 0.9rem; white-space: nowrap; }
-.btn.go { box-shadow: 0 6px 16px -8px var(--go); }
+#seg-ses button { flex: none; min-width: 0; padding: 0 6px; white-space: nowrap; }
 .panel input { min-height: 52px; }
 .hist li { border-bottom-color: var(--rule); }
 @media (max-width: 600px) {
@@ -287,6 +277,30 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
 .tl-linkrow label { display: flex; flex-direction: column; gap: 6px; font: 600 0.75rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .tl-linkrow input, .tl-linkrow select { min-height: 46px; padding: 0 10px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); color: var(--ink); font: 500 1rem var(--font-body); text-transform: none; letter-spacing: 0; }
 .tl-label { font: 600 0.75rem/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.file-btn { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+h4.sub { font: 600 0.75rem/1.2 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
+#seg-mu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#seg-mu button { width: 100%; min-width: 0; padding-inline: 2px; white-space: nowrap; overflow: hidden; text-overflow: clip; letter-spacing: -0.01em; }
+/* Every selector row uses one button size. */
+.seg button { font-size: 0.82rem; }
+.fin-head + .mvs .mv .body { gap: 0; }
+.fin-head + .mvs .mv .tag:empty { display: none; }
+/* Top row: Training and New workout share one size, on one line. */
+.appbar > #btn-new, .appbar > #fld-train #btn-train { font-size: 0.8rem; font-weight: 700; letter-spacing: 0; }
+.appbar > #fld-train #btn-train { background: #fff; border-color: #15191c; color: #15191c; }
+.appbar > #fld-train #btn-train[aria-pressed="true"] { background: #15191c; border-color: #15191c; color: #fff; }
+.appbar > #btn-new { white-space: nowrap; }
+/* Selector rows: a little more air between rows. */
+#seg-ses, #seg-mu, #seg-eq { row-gap: 8px; }
+/* Timer controls: Pause and +1 round white, Skip/Done black, Reset muted. */
+.tm-row .btn { background: #15191c; color: #fff; border: 1px solid #15191c; }
+.tm-row .btn.tm-main { background: #15191c; color: #fff; }
+.tm-row .btn.tm-reset { background: #fff; color: #6b7280; border-color: #9aa0a6; }
+/* Timer header: same colours as the timer controls. */
+.tm-strip .btn.ghost { background: #fff; color: #15191c; border: 1px solid #15191c; }
+.tm-strip #tm-strip-reset { background: #15191c; color: #fff; border-color: #15191c; }
+/* All timer boxes white with black text, in the header and below. */
+.tm-row .btn.tm-main, .tm-row .btn.tm-reset, .tm-strip .btn.ghost, .tm-strip #tm-strip-reset { background: #15191c; color: #fff; border: 1px solid #15191c; }
 </style>
 
 <main class="wrap">
@@ -308,7 +322,7 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
     <div class="field" id="fld-gor" hidden><span id="lbl-loc">Where</span><div class="seg" id="seg-loc" role="group" aria-labelledby="lbl-loc"></div></div>
     <div class="field" id="fld-core" hidden><span id="lbl-core">Core type</span><div class="seg" id="seg-core" role="group" aria-labelledby="lbl-core"></div></div>
     <div class="field" id="fld-rnd" hidden><span id="lbl-rnd">Rounds</span><div class="seg" id="seg-rnd" role="group" aria-labelledby="lbl-rnd"></div></div>
-    <div class="field"><span id="lbl-mu">Muscles (up to 4) and compound</span><div class="seg" id="seg-mu" role="group" aria-labelledby="lbl-mu"></div></div>
+    <div class="field"><span id="lbl-mu">Muscle</span><div class="seg" id="seg-mu" role="group" aria-labelledby="lbl-mu"></div></div>
     <div class="field"><span id="lbl-eq">Equipment</span><div class="seg" id="seg-eq" role="group" aria-labelledby="lbl-eq"></div></div>
     <div class="field"><span id="lbl-fmt">Format</span><div class="seg" id="seg-fmt" role="group" aria-labelledby="lbl-fmt"></div></div>
     <div class="field"><span id="lbl-cnt">Movements</span><div class="seg" id="seg-cnt" role="group" aria-labelledby="lbl-cnt"></div></div>
@@ -342,7 +356,7 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
   <button class="btn ghost" id="tm-log-btn" type="button" hidden>Log</button>
 
   <div class="actions appbar">
-    <div class="field row" id="fld-train" hidden><div class="seg"><button type="button" id="btn-train" aria-pressed="false">TRAINING: OFF</button></div></div>
+    <div class="field row" id="fld-train" hidden><div class="seg"><button type="button" id="btn-train" aria-pressed="false">OFF</button></div></div>
     <button class="btn primary" id="btn-new" type="button">New workout</button>
     <div class="timer-start" id="timer-start"></div>
     <div class="act-row">
@@ -368,7 +382,9 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
     <h3>History</h3>
     <p class="help" id="hist-empty">Nothing logged yet. Finish a workout and tap Log result.</p>
     <ul class="hist" id="hist-list"></ul>
-    <div class="actions"><button class="btn ghost" id="hist-copy" type="button">Copy log</button><button class="btn ghost" id="hist-close" type="button">Close</button></div>
+    <h4 class="sub">Progress</h4>
+    <ul class="hist" id="prog-list"></ul>
+    <div class="actions"><button class="btn ghost" id="hist-copy" type="button">Copy log</button><button class="btn ghost" id="hist-export" type="button">Export</button><label class="btn ghost file-btn" for="hist-file">Import<input id="hist-file" type="file" accept="application/json,.json" hidden></label><button class="btn ghost" id="hist-close" type="button">Close</button></div>
   </section>
 
   <p class="note" id="note" hidden></p>
@@ -423,6 +439,7 @@ chest,triceps|Staggered-hand push-ups|8|reps|unilateral
 chest|Ring push-ups|8|reps|ring
 chest|Alternating dumbbell chest press|12|side|press
 chest|Dumbbell squeeze press|10|reps|press
+chest|Plate squeeze press|10|reps|press
 chest|Band chest flyes|15|reps|fly
 chest|Medicine-ball chest passes|10|reps|pass
 chest,triceps|Clap push-ups|5|reps|pass
@@ -470,6 +487,8 @@ core|Plank shoulder taps|20|reps|plank
 core|V-up ball pass-through|10|reps|passthru
 core|Turkish plate sit-ups|10|reps|crunch
 core|Plate Russian twists|20|reps|rotation
+core|Kettlebell Russian twists|20|reps|rotation
+core|Barbell rollouts|10|reps|plank
 core|Plank kettlebell pass-through|10|reps|passthru
 core|Dumbbell woodchoppers|10|side|rotation
 core|Flutter kicks|30|s|legraise
@@ -712,10 +731,29 @@ BAND_CORE.forEach(function (line) {
   });
   extra.forEach(function (m) { MOVES.push(m); });
 })();
-const NAMES = { comp: 'Compound', biceps: 'Biceps', triceps: 'Triceps', chest: 'Chest', shoulders: 'Shoulders', core: 'Core', back: 'Back', legs: 'Legs' };
+const NAMES = { comp: 'Comp', biceps: 'Biceps', triceps: 'Triceps', chest: 'Chest', shoulders: 'Shoulders', core: 'Core', back: 'Back', legs: 'Legs' };
 const ORDER = ['biceps', 'triceps', 'chest', 'shoulders', 'core', 'back', 'legs'];
-const LENGTHS = [10, 15, 20];
-const lengthsFor = function (fmt) { return fmt === 'emom' ? EMOM_LENGTHS : LENGTHS; };
+// Tuning: every number that sets how big or long a workout is, in one place.
+// Lengths are minutes (AMRAP, For time) or minutes for EMOM; FT rounds are keyed by length; set clocks are seconds per round.
+const TUNE = {
+  lengths: { amrap: [10, 15, 20], emom: [9, 12, 15], fortime: [12, 18, 24] },
+  ftRounds: { 12: 8, 18: 12, 24: 16 },
+  trisetRounds: 3,
+  trisetRoundSecs: { 2: 150, 3: 180, 4: 210 },
+  // Rest is part of each set round: one pass through the movements must leave at least this much rest on the clock.
+  setMinRestSecs: 30,
+  counts: { set: [2, 3, 4], fortime: [3, 4, 5], amrap: [3, 4, 5], custom: [3, 4, 5, 6], hero: [3, 4, 5] },
+  repsOpts: [8, 10, 12, 15, 20],
+  hard: { repMul: 1.25, timedAddSec: 10, metersAdd: 10, roundUpTo: 5, roundFrom: 20 },
+  finisherMin: { std: 5, hard: 5 },
+  tabata: { work: 40, rest: 20, rounds: 8 },
+  gorillaMinPerRound: 7,
+  emomMaxTimedSec: 45,
+  // Expected time bands for the duration check (minutes). For time must finish inside its cap and not far under it.
+  duration: { forTimeMinShare: 0.5, forTimeMaxShare: 1 }
+};
+const LENGTHS = TUNE.lengths.amrap;
+const lengthsFor = function (fmt) { return fmt === 'emom' ? EMOM_LENGTHS : fmt === 'fortime' ? TUNE.lengths.fortime : LENGTHS; };
 
 // Each muscle has three slots; a circuit takes one movement per slot, always from three different patterns.
 const MU = {
@@ -840,15 +878,17 @@ const isCoreOnly = function (sel, comp) { return sel.length === 1 && sel[0] === 
 // Sessions take 3 to 5 movements exactly (the compound is always kept, muscles are dropped at random if there are more than fit).
 // Custom takes 3 to 6 and always includes every muscle you picked.
 // EMOM is always 3 movements, repeated 3, 4 or 5 times: 9, 12 or 15 min.
-const EMOM_LENGTHS = [9, 12, 15];
+const EMOM_LENGTHS = TUNE.lengths.emom;
 const EMOM_MOVES = 3;
 const emomCount = function () { return EMOM_MOVES; };
+// AMRAP, For time and Custom give each picked muscle (and the compound) its own movement, and never fewer than the count set.
 const countFor = function (sel, comp, fmt, cnt, n, custom, auto) {
+  const picks = sel.length + (comp ? 1 : 0);
   if (fmt === 'emom') return emomCount(n, cnt, auto);
   if (fmt === 'triset') return Math.min(4, Math.max(2, cnt || 3));
-  if (fmt === 'fortime') return Math.min(5, Math.max(3, cnt || 4));
-  if (fmt === 'amrap') return Math.min(5, Math.max(3, cnt || 3));
-  return custom ? Math.min(7, cnt || 3) : Math.min(5, Math.max(3, cnt || 4));
+  if (fmt === 'fortime') return Math.min(5, Math.max(3, cnt || 4, picks));
+  if (fmt === 'amrap') return Math.min(5, Math.max(3, cnt || 3, picks));
+  return custom ? Math.min(7, Math.max(cnt || 3, picks)) : Math.min(5, Math.max(3, cnt || 4));
 };
 
 // Pressing patterns, used by the session rules that limit pressing after bench or before it.
@@ -1046,7 +1086,7 @@ const isWeighted = function (m) {
 };
 // Preference order by format. Each rank is tried in turn and taken with the FAVOUR chance; otherwise it falls through.
 // Dumbbells first for every exercise, except these kettlebell movements, which keep their kettlebell.
-const KB_KEEP = /^Kettlebell (swings|front squats|farmer's carry|gorilla rows|goblet squats)$/i;
+const KB_KEEP = /^Kettlebell (swings|front squats|farmer's carry|gorilla rows|goblet squats|Russian twists)$/i;
 const rankOrder = {
   fortime: function (m) { return m.muscles[0] === 'cond' || m.muscles.indexOf('comp') !== -1 ? 0 : KB_KEEP.test(m.name) ? 0 : eqOf(m) === 'db' ? 1 : eqOf(m) === 'bw' || eqOf(m) === 'pullup' ? 3 : eqOf(m) === 'band' ? 4 : 5; },
   // Hinge movements (deadlifts, swings, good mornings) are a lesser choice, so they come up only some of the time.
@@ -1068,10 +1108,10 @@ const pickPref = function (pool, fmt) {
 
 // For time: rounds depend only on the chosen length, and it always uses the base (Medium) reps.
 // Each round's clock by set type: superset 2:30, triset 3:00, megaset 3:30.
-const TRISET_ROUND = { 2: 150, 3: 180, 4: 210 };
+const TRISET_ROUND = TUNE.trisetRoundSecs;
 const clockOf = function (s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const roundSecs = function (w) { return TRISET_ROUND[w.items.length] || 180; };
-const FT_ROUNDS = { 10: 8, 15: 12, 20: 16 };
+const FT_ROUNDS = TUNE.ftRounds;
 
 // Finisher: one HYROX, ATHX or jump rope conditioning movement, different from the main circuit.
 // HYROX, ATHX-style and jump rope movements come up first (about 4 times in 5). Sessions can rule movements out, and with legs selected it is low-impact.
@@ -1086,10 +1126,10 @@ function pickFin(sel, items, rules) {
   const prio = cands.filter(function (m) { return FIN_PRIORITY.indexOf(m.name) !== -1; });
   return prio.length && Math.random() < 0.8 ? pick(prio) : pick(cands);
 }
-const finMin = function (lvl) { return lvl === 'hard' ? 3 : 2; };
+const finMin = function (lvl) { return lvl === 'hard' ? TUNE.finisherMin.hard : TUNE.finisherMin.std; };
 
 // Tabata (core only): four movements rotated in order, 8 rounds of 20 s on / 10 s off. No levels, no length options.
-function tabataShape(w) { return Object.assign({}, w, { work: 40, rest: 20, rounds: 8, ctype: CORE_TYPE }); }
+function tabataShape(w) { return Object.assign({}, w, { work: TUNE.tabata.work, rest: TUNE.tabata.rest, rounds: TUNE.tabata.rounds, ctype: CORE_TYPE }); }
 // Core Tabata: one movement from each target group, in this order, with no repeats.
 // Rectus abdominis; internal and external obliques; transversus abdominis and rectus abdominis; rectus abdominis and hip flexors.
 // Single-sided movements are left out, so every slot is one movement and no pairs appear.
@@ -1214,9 +1254,26 @@ function generate(sel, comp, fmt, n, reps, cnt, preset, auto) {
   for (let t = 0; t < 12; t++) {
     DBL = dbl;
     w = generateOnce(sel, comp, fmt, n, reps, cnt, preset, auto);
+    // A set round must leave room for rest on its clock: try again if one pass uses too much of it.
+    if (w && w.items && fmt === 'triset' && !setFits(w)) continue;
     if (!dbl || !w || !w.items || w.fmt === 'tabata' || w.hero || w.gor || w.items.filter(function (m) { return m.muscles.indexOf('comp') !== -1; }).length === 2) break;
   }
   return w;
+}
+// Rough seconds for one pass through a set's movements: reps about 2.5 s each (per side twice), timed work as written,
+// metres about 0.3 s each, plus 8 s to move between movements.
+function passSecs(w) {
+  return w.items.reduce(function (s, m) {
+    const a = amount(m, w);
+    let t;
+    if (a.u === 'sec' || a.u === 'sec per side') t = a.n * (a.u === 'sec per side' ? 2 : 1);
+    else if (a.u === 'm' || a.u === 'm per side') t = a.n * 0.3 * (a.u === 'm per side' ? 2 : 1);
+    else t = a.n * 2.5 * (a.u === 'per side' ? 2 : 1);
+    return s + t + 8;
+  }, 0);
+}
+function setFits(w) {
+  return passSecs(w) + TUNE.setMinRestSecs <= roundSecs(w);
 }
 function generateOnce(sel, comp, fmt, n, reps, cnt, preset, auto) {
   if (preset === 'armtabata') return armTabataWorkout();
@@ -1245,7 +1302,7 @@ function generateOnce(sel, comp, fmt, n, reps, cnt, preset, auto) {
   if (!fit) return null;
   const w = { sel: sel, comp: comp, preset: preset, rules: rules, extra: used, loose: false, skipped: av.skipped, fmt: fmt, n: fmt === 'triset' ? null : n, reps: reps || 10, lvl: (reps || 10) >= 12 ? 'hard' : 'std', spec: fit.spec, items: fit.items };
   if (fmt === 'fortime') w.rounds = FT_ROUNDS[n];
-  if (fmt === 'triset') w.rounds = 3;
+  if (fmt === 'triset') w.rounds = TUNE.trisetRounds;
   w.dbl = DBL;
   addFinalCarry(w);
   orderBySize(w);
@@ -1314,7 +1371,7 @@ function fitCount(w, T) {
 function reshape(w, fmt, n, reps) {
   const r = { repMap: w.repMap, sel: w.sel, comp: w.comp, preset: w.preset, rules: w.rules, extra: w.extra, loose: w.loose, skipped: w.skipped, fmt: fmt, n: fmt === 'triset' ? null : n, reps: reps || w.reps, lvl: (reps || w.reps) >= 12 ? 'hard' : 'std', spec: w.spec, items: w.items.slice() };
   if (fmt === 'fortime') r.rounds = FT_ROUNDS[n];
-  if (fmt === 'triset') r.rounds = 3;
+  if (fmt === 'triset') r.rounds = TUNE.trisetRounds;
   r.fin = w.fin;
   r.dbl = DBL;
   return orderBySize(r);
@@ -1364,16 +1421,16 @@ function swapAt(w, i) {
 // Medium uses the base numbers. Hard level: about 25% more reps, 10 s more work, 10 m more distance.
 function scaled(m, lvl) {
   if (lvl !== 'hard') return m.rx;
-  if (m.unit === 's' || m.unit === 's side' || m.unit === 'm' || m.unit === 'm side') return m.rx + 10;
-  const up = Math.max(m.rx + 1, Math.round(m.rx * 1.25));
-  return up >= 20 ? Math.round(up / 5) * 5 : up;
+  if (m.unit === 's' || m.unit === 's side' || m.unit === 'm' || m.unit === 'm side') return m.rx + TUNE.hard.timedAddSec;
+  const up = Math.max(m.rx + 1, Math.round(m.rx * TUNE.hard.repMul));
+  return up >= TUNE.hard.roundFrom ? Math.round(up / TUNE.hard.roundUpTo) * TUNE.hard.roundUpTo : up;
 }
 
 function floorFor(m, w) {
   if (w.preset !== 'hyp' || (m.unit !== 'reps' && m.unit !== 'side')) return 0;
   return m.unit === 'side' ? 10 : 12;
 }
-const REPS_OPTS = [8, 10, 12, 15, 20];
+const REPS_OPTS = TUNE.repsOpts;
 // Reps are picked at random from the standard options and kept for the whole workout (w.repMap).
 function repsFor(m, w) {
   if (m.unit === 's' || m.unit === 's side' || m.unit === 'm' || m.unit === 'm side') return m.rx;
@@ -1398,8 +1455,8 @@ function amount(m, w) {
   const v = repsFor(m, w);
   if (m.unit === 'reps') return { n: v, u: 'reps' };
   if (m.unit === 'side') return { n: v, u: sideLabel(m) };
-  if (m.unit === 's') return { n: w.fmt === 'emom' ? Math.min(v, 45) : v, u: 'sec' };
-  if (m.unit === 's side') return { n: w.fmt === 'emom' ? Math.min(v, 45) : v, u: 'sec per side' };
+  if (m.unit === 's') return { n: w.fmt === 'emom' ? Math.min(v, TUNE.emomMaxTimedSec) : v, u: 'sec' };
+  if (m.unit === 's side') return { n: w.fmt === 'emom' ? Math.min(v, TUNE.emomMaxTimedSec) : v, u: 'sec per side' };
   if (m.unit === 'm') return { n: v, u: 'm' };
   return { n: v, u: 'm per side' };
 }
@@ -1463,7 +1520,7 @@ function textOf(w) {
       lines.push('- ' + (lab ? lab + ': ' : '') + a.n + ' ' + a.u + ' ' + m.name);
     }
   });
-  if (w.fin) lines.push('', 'Finisher: ' + finMin(w.lvl) + ' min ' + w.fin.name + ', all-out effort');
+  if (w.fin) lines.push('', 'Finisher: ' + finMin(w.lvl) + ' min ' + w.fin.name);
   return lines.join('\n');
 }
 
@@ -1656,12 +1713,32 @@ function gorSwap(w, i) {
   w.items[i] = gorItem(ci, c[0], w.reps);
   return true;
 }
+// The Gorilla workout for each place, kept while the page is open. New workout clears it.
+let gorSet = {};
+// Each place's Gorilla workout survives a reload (per viewer, in this browser).
+const GOR_KEY = 'mini-pump-gorilla-1';
+function saveGorSet() {
+  try { localStorage.setItem(GOR_KEY, JSON.stringify(gorSet)); } catch (e) {}
+}
+function loadGorSet() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(GOR_KEY) || 'null');
+    if (!saved || typeof saved !== 'object') return;
+    Object.keys(saved).forEach(function (k) { if (saved[k] && saved[k].gor) gorSet[k] = saved[k]; });
+  } catch (e) {}
+}
+// Rounds and reps on the dials apply to every place's workout, so each one matches what is on screen.
+function gorSync(w) {
+  w.rounds = state.grnd; w.reps = state.reps; w.lvl = state.reps >= 12 ? 'hard' : 'std';
+  w.items = w.items.map(function (x) { return gorItem(x.slot, x.name, state.reps); });
+  return w;
+}
 function gorHow(w) {
   return (w.loc === 'box' ? 'At the box: rings, parallel bars, a bench and a box are all fair game.' : 'At the park: pull-up bar, a bench and the floor.') + ' Do the list in order, ' + w.rounds + ' rounds, rest only as needed. Break big sets early. Time the whole thing and try to beat it next time.';
 }
 function gorPhases(w) {
   const all = w.items.map(function (it) { return it.n + ' ' + it.name; }).join(' · ');
-  return [{ label: 'Get ready', sec: 5, text: 'Start in a moment' }, { label: w.rounds + ' rounds for time', sec: w.rounds * 7 * 60, up: true, counter: true, text: all }];
+  return [{ label: 'Get ready', sec: 5, text: 'Start in a moment' }, { label: w.rounds + ' rounds for time', sec: w.rounds * TUNE.gorillaMinPerRound * 60, up: true, counter: true, text: all }];
 }
 function gorText(w) {
   const lines = ['Mini-pump Gorilla (' + (w.loc === 'box' ? 'box' : 'park') + '): ' + w.rounds + ' rounds for time', ''];
@@ -1672,6 +1749,14 @@ function gorText(w) {
 
 // ---- Log: finished workouts saved on this device, with a best time or score for Hero and Gorilla workouts.
 const LOG_KEY = 'mini-pump-log-1';
+function copyText(text, doneMsg) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  setStatus(ok ? doneMsg : 'Copy is blocked here.');
+}
 // What kind of result a workout has: a time (lower is better), rounds + reps (higher is better), or free text.
 function resultKind(w) {
   if (w.hero) return w.h.type === 'amrap' ? 'amrap' : (w.h.type === 'emom' || w.h.type === 'stations' ? 'free' : 'time');
@@ -1742,6 +1827,9 @@ const LOADS = [
   [/Dumbbell shoulder press|Alternating dumbbell press/i, '10-16 kg each hand'],
   [/Arnold/i, '8-14 kg each hand'],
   [/Plate front/i, '5-10 kg plate'],
+  [/Plate squeeze press/i, '5-10 kg plate'],
+  [/Kettlebell Russian twists/i, '8-12 kg'],
+  [/Barbell rollouts/i, ''],
   [/front raises/i, '6-10 kg each hand'],
   [/upright rows/i, '8-14 kg each hand'],
   [/squeeze press/i, '10-18 kg each hand'],
@@ -1868,7 +1956,7 @@ function phasesFor(w) {
   }
   if (w.fin) {
     ph.push({ label: 'Get ready', sec: 15, text: 'Finisher next: ' + w.fin.name });
-    ph.push({ label: 'Finisher', sec: finMin(w.lvl) * 60, text: w.fin.name + ', all-out' });
+    ph.push({ label: 'Finisher', sec: finMin(w.lvl) * 60, text: w.fin.name });
   }
   return ph;
 }
@@ -1901,20 +1989,17 @@ function eqChange(w) {
   return nw;
 }
 
-// Kettlebells only for these four movements. Every other exercise is done with dumbbells or barbell.
+// Kettlebells only for these movements. Every other exercise is done with dumbbells or barbell.
 for (let i = MOVES.length - 1; i >= 0; i--) { if (eqOf(MOVES[i]) === 'kb' && !KB_KEEP.test(MOVES[i].name)) MOVES.splice(i, 1); }
 /*DOM*/
 const $ = function (id) { return document.getElementById(id); };
 const state = { train: 'off', ctype: 'dyn', gloc: 'park', grnd: 4, hero: 'cindy', ses: 'custom', sel: ['chest', 'back'], comp: true, fmt: 'amrap', len: 10, cnt: 4, emomAuto: true, eq: EQ_ORDER.slice(), lvl: 'hard', reps: 10, w: null };
 const KEY = 'mini-pump-generator-4';
-const maxMu = function () {
-  return state.ses === 'custom' ? keyCap() : 5;
-};
-// Custom: muscles plus compound can never be more than the movement count set.
+// Up to 4 muscles, plus one full-body compound that is not counted among them.
+const maxMu = function () { return 4; };
 const keyCap = function () { return state.fmt === 'emom' ? emomCount(state.len, state.cnt, state.emomAuto) : state.cnt; };
-const keyCount = function () { return state.sel.length + (state.comp ? 1 : 0); };
 const trimToCap = function () {
-  while (keyCount() > keyCap()) { if (state.sel.length) state.sel = state.sel.slice(0, -1); else state.comp = false; }
+  while (state.sel.length > maxMu()) state.sel = state.sel.slice(0, -1);
 };
 
 try {
@@ -1932,7 +2017,7 @@ try {
     if (['amrap', 'emom', 'fortime', 'triset'].indexOf(saved.fmt) !== -1) state.fmt = saved.fmt;
     if (typeof saved.len === 'number') state.len = saved.len;
     if (lengthsFor(state.fmt).indexOf(state.len) === -1) state.len = lengthsFor(state.fmt)[0];
-    if ([3, 4, 5, 6].indexOf(saved.cnt) !== -1) state.cnt = saved.cnt;
+    if (TUNE.counts.custom.indexOf(saved.cnt) !== -1) state.cnt = saved.cnt;
     if (saved.emomAuto === false) state.emomAuto = false;
     // Pull-up bar is new: saved settings without it keep it switched on.
     if (Array.isArray(saved.eq) && saved.eq.indexOf('other') === -1) { const e = EQ_ORDER.filter(function (k) { return saved.eq.indexOf(k) !== -1 || k === 'pullup'; }); if (e.length) state.eq = e; }
@@ -1966,16 +2051,41 @@ function setStatus(msg) {
 }
 
 
+// The muscle just switched off in a session preset. Its exercises are swapped for ones from the muscles still on.
+let lastRemoved = null;
+function muSwap(w, removed) {
+  const keys = state.sel.concat(state.comp ? ['comp'] : []);
+  if (!keys.length) return null;
+  const nw = Object.assign({}, w, { items: w.items.slice(), spec: w.spec.map(function (x) { return Object.assign({}, x); }) });
+  let r = 0;
+  nw.spec.forEach(function (x) { if (x.k === removed) { x.k = keys[r % keys.length]; r++; } });
+  if (!r) return null;
+  if (!repairFor(nw)) return null;
+  if (!valid(nw.items, nw.spec, nw.fmt, nw.items.length, true, nw.rules, nw.extra, nw.loose)) return null;
+  orderBySize(nw);
+  return nw;
+}
+// The main muscles of the current session (none for Custom, Gorilla and Hero).
+function mainMuscles() {
+  const pr = state.ses !== 'custom' && PRESETS[state.ses];
+  return pr && pr.rules && pr.rules.needBig ? pr.rules.needBig : [];
+}
 function toggleMuscle(k) {
   if (!sessionAllows(state.ses, k)) { setStatus('That session is fixed to its own muscles. Use Custom to mix others in.'); return; }
   const adding = k === 'comp' ? !state.comp : state.sel.indexOf(k) === -1;
-  if (state.ses === 'custom' && adding && keyCount() >= keyCap()) { setStatus('This workout has ' + keyCap() + ' movements, so pick at most ' + keyCap() + ' muscles and compound. Raise Movements to add more.'); return; }
+  // A session's main muscle is compulsory: it cannot be unticked while it is the only one of its kind on.
+  const mains = mainMuscles();
+  if (!adding && mains.indexOf(k) !== -1 && !mains.some(function (x) { return x !== k && state.sel.indexOf(x) !== -1; })) {
+    setStatus(PRESETS[state.ses].label + ' needs ' + mains.map(function (x) { return NAMES[x].toLowerCase(); }).join(' or ') + '. ' + NAMES[k] + ' stays on.');
+    return;
+  }
+  lastRemoved = adding ? null : k;
   if (k === 'comp') {
     state.comp = !state.comp;
   } else if (state.sel.indexOf(k) !== -1) {
     state.sel = state.sel.filter(function (x) { return x !== k; });
   } else {
-    if (state.sel.length >= maxMu()) { setStatus('Pick up to ' + maxMu() + ' muscles' + (state.fmt === 'triset' ? ' for a set.' : (state.fmt === 'emom' ? ' for a ' + state.len + '-min EMOM.' : ' with ' + state.cnt + ' movements. Raise Movements to add more.'))); return; }
+    if (state.sel.length >= maxMu()) { setStatus('Pick up to ' + maxMu() + ' muscles. The compound is separate.'); return; }
     state.sel = ORDER.filter(function (x) { return x === k || state.sel.indexOf(x) !== -1; });
   }
   save(); renderControls(); applySettings('mu');
@@ -2024,14 +2134,14 @@ function renderControls() {
   const locked = false;
   $('lbl-cnt').textContent = locked ? 'Movements' : 'Movements';
   $('seg-lvl').parentElement.hidden = state.ses !== 'hero';
-  $('lbl-mu').textContent = 'Muscles (up to ' + maxMu() + ') and compound';
+  $('lbl-mu').textContent = 'Muscle';
   const tabata = state.ses === 'core' || state.ses === 'armtabata';
   segment($('seg-ses'), [['custom', 'Custom']].concat(PRESET_ORDER.map(function (k) { return [k, PRESETS[k].label]; }), [['gorilla', 'Gorilla'], ['hero', 'Hero']]), tabata ? 'core' : state.ses, pickSession);
   const gor = state.ses === 'gorilla';
   const trainable = !!TRAINING[state.ses];
   $('fld-train').hidden = !trainable;
   $('btn-train').setAttribute('aria-pressed', state.train === 'on' ? 'true' : 'false');
-  $('btn-train').textContent = 'TRAINING: ' + (state.train === 'on' ? 'ON' : 'OFF');
+  $('btn-train').textContent = state.train === 'on' ? 'ON' : 'OFF';
   CORE_TYPE = state.ctype;
   $('fld-core').hidden = !tabata;
   if (tabata) segment($('seg-core'), [['core', 'Core'], ['armtabata', 'Arms']], state.ses, pickSession);
@@ -2044,8 +2154,17 @@ function renderControls() {
   $('fld-rnd').hidden = !gor;
   if (gor) {
     segment($('seg-loc'), [['park', 'Park (pull-up bar)'], ['box', 'Box (all equipment)']], state.gloc, function (v) {
+      // Tapping the place already selected changes nothing: the workout stays as it is.
+      if (v === state.gloc) return;
       state.gloc = v; save(); renderControls();
-      if (state.w && state.w.gor) { state.w = gorillaWorkout(v, state.grnd, state.reps); renderGorilla(); return; }
+      // Each place keeps its own Gorilla workout, so going back and forth does not lose the one that was there.
+      if (state.w && state.w.gor) {
+        gorSet[state.w.loc] = state.w;
+        const kept = gorSet[v] || gorillaWorkout(v, state.grnd, state.reps);
+        gorSet[v] = kept;
+        state.w = gorSync(kept);
+        renderGorilla(); return;
+      }
       keepWorkout();
     });
     segment($('seg-rnd'), [[3, '3'], [4, '4'], [5, '5']], state.grnd, function (v) { state.grnd = v; save(); if (state.w && state.w.gor) { state.w.rounds = v; renderGorilla(); } renderControls(); });
@@ -2063,6 +2182,8 @@ function renderControls() {
     b.type = 'button';
     b.textContent = NAMES[k];
     b.setAttribute('aria-pressed', String(k === 'comp' ? state.comp : state.sel.indexOf(k) !== -1));
+    // The session's main muscle cannot be unticked, so it is marked as such.
+    if (mainMuscles().indexOf(k) !== -1) { b.textContent = NAMES[k]; b.title = 'Main muscle for this session: it stays on'; b.classList.add('main'); }
     b.addEventListener('click', function () { toggleMuscle(k); });
     box.appendChild(b);
   });
@@ -2095,7 +2216,7 @@ function renderControls() {
   });
   const emom = state.fmt === 'emom';
   const setFmt = state.fmt === 'triset';
-  const counts = setFmt ? [2, 3, 4] : state.fmt === 'fortime' || state.fmt === 'amrap' ? [3, 4, 5] : (state.ses === 'custom' ? [3, 4, 5, 6] : [3, 4, 5]);
+  const counts = setFmt ? TUNE.counts.set : state.fmt === 'fortime' ? TUNE.counts.fortime : state.fmt === 'amrap' ? TUNE.counts.amrap : (state.ses === 'custom' ? TUNE.counts.custom : TUNE.counts.hero);
   const SET_NAMES = { 2: 'Superset', 3: 'Triset', 4: 'Megaset' };
   const cntOptions = counts.map(function (n) { return [n, setFmt ? SET_NAMES[n] : String(n)]; });
   segment($('seg-cnt'), cntOptions, locked ? 3 : state.cnt, function (v) {
@@ -2153,6 +2274,27 @@ function makeRow(m, amt, tagText, onSwap) {
 
 
 
+// The workout on screen is kept, so reopening the app brings it back. Cleared when there is no workout.
+const LAST_KEY = 'mini-pump-last-1';
+function keepLast() {
+  try {
+    if (!state.w) { localStorage.removeItem(LAST_KEY); return; }
+    localStorage.setItem(LAST_KEY, JSON.stringify({ ses: state.ses, w: state.w }));
+  } catch (e) {}
+}
+function restoreLast() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch (e) { saved = null; }
+  if (!saved || !saved.w || saved.ses !== state.ses) return false;
+  const w = saved.w;
+  if (!w.gor && !w.hero && w.items) w.items = w.items.map(function (x) {
+    const base = MOVES.find(function (m) { return m.name === x.name; });
+    return base ? Object.assign({}, base, x) : x;
+  });
+  state.w = w;
+  if (w.hero) renderHero(); else if (w.gor) renderGorilla(); else renderSheet();
+  return true;
+}
 function renderHero() {
   const w = state.w;
   $('btn-new').disabled = false; $('btn-copy').disabled = false; $('btn-log').disabled = false;
@@ -2176,6 +2318,8 @@ function renderHero() {
 
 
 function renderGorilla() {
+  keepLast();
+  saveGorSet();
   const w = state.w;
   $('btn-new').disabled = false; $('btn-copy').disabled = false; $('btn-log').disabled = false;
   const sheet = $('sheet');
@@ -2233,12 +2377,13 @@ function renderSheet() {
   const fl = document.createElement('ul');
   fl.className = 'mvs';
   if (w.fin) {
-    fl.appendChild(makeRow(w.fin, { n: finMin(w.lvl), u: 'min all-out' }, 'Finisher · Conditioning', function () {
+    fl.appendChild(makeRow(w.fin, { n: finMin(w.lvl), u: 'min' }, '', function () {
       if (swapFin(state.w)) renderSheet(); else setStatus('No other finisher fits.');
     }));
   }
   sheet.appendChild(h); sheet.appendChild(ul);
   if (w.fin) { sheet.appendChild(fh); sheet.appendChild(fl); }
+  keepLast(); // after the rows: repsFor fills w.repMap while they are built
   const P = PRESETS[w.preset];
   const mixNote = 'One movement for each selected muscle, always from different patterns' + (w.comp ? ', plus a full-body compound' : '') + (w.items.length > w.sel.length + (w.comp ? 1 : 0) ? ', and extra movements repeat your selected muscles to fill the circuit (for example two chest movements and one biceps)' : '') + '.' + (w.sel.indexOf('legs') !== -1 ? ' With legs in the mix the finisher is low-impact.' : '');
   const rpe = (P && P.rpe) || { std: 'RPE 7-8', hard: 'RPE 8-9' };
@@ -2418,9 +2563,9 @@ function renderTimer() {
       if (tm.paused) { tm.phaseStart += Date.now() - tm.pauseAt; tm.paused = false; } else { tm.paused = true; tm.pauseAt = Date.now(); }
       renderTimer();
     }));
-    row.appendChild(tmButton(p.manual || p.up ? 'Done' : 'Skip', 'ghost', nextPhase));
+    row.appendChild(tmButton(p.manual || p.up ? 'Done' : 'Skip', 'ghost tm-main', nextPhase));
   }
-  row.appendChild(tmButton('Reset', 'ghost', function () { timerStop(); renderTimer(); }));
+  row.appendChild(tmButton('Reset', 'ghost tm-reset', function () { timerStop(); renderTimer(); }));
   box.appendChild(row);
   renderTimerTime();
 }
@@ -2462,7 +2607,7 @@ function regenerate() {
   setEq(state.eq);
   CORE_TYPE = state.ctype;
   $('logbox').hidden = true;
-  if (state.ses === 'gorilla') { state.w = gorillaWorkout(state.gloc, state.grnd, state.reps); $('status').textContent = ''; renderGorilla(); return; }
+  if (state.ses === 'gorilla') { gorSet = {}; state.w = gorSet[state.gloc] = gorillaWorkout(state.gloc, state.grnd, state.reps); $('status').textContent = ''; renderGorilla(); return; }
   if (state.ses === 'hero') { state.w = heroWorkout(state.hero, state.lvl); $('status').textContent = ''; renderHero(); return; }
   if (!state.sel.length && !state.comp) { state.w = null; renderEmpty(); return; }
   const tr = state.train === 'on' && TRAINING[state.ses] ? TRAINING[state.ses] : null;
@@ -2499,6 +2644,23 @@ function applySettings(changed) {
   // Custom: picking or unpicking a muscle builds the workout straight away.
   if (changed === 'mu' && state.ses === 'custom') { regenerate(); return; }
   const w = state.w;
+  // Session presets: switching a muscle off swaps its exercises for others, and the muscles still on stay as they are.
+  if (changed === 'mu' && lastRemoved && w && w.spec && w.fmt !== 'tabata' && !w.hero && !w.gor) {
+    const removed = lastRemoved; lastRemoved = null;
+    const nw = muSwap(w, removed);
+    if (nw) { state.w = nw; $('status').textContent = ''; renderSheet(); return; }
+    // The remaining muscles cannot take over the same slots: build a new workout from them if the rules allow it.
+    const prev = state.w;
+    regenerate();
+    if (state.w) return;
+    // Otherwise the muscle goes back on, the workout stays as it was, and the reason is shown.
+    if (removed === 'comp') state.comp = true; else state.sel = ORDER.filter(function (x) { return x === removed || state.sel.indexOf(x) !== -1; });
+    const pr = PRESETS[state.ses];
+    const need = pr && pr.rules && pr.rules.needBig ? pr.rules.needBig : null;
+    const msg = need ? (pr.label + ' needs ' + need.map(function (k) { return NAMES[k].toLowerCase(); }).join(' or ') + ' to build a full workout. ' + NAMES[removed === 'comp' ? 'comp' : removed] + ' stays on.') : 'Those muscles cannot make a full ' + (pr ? pr.label : '') + ' workout. ' + (NAMES[removed] || 'That muscle') + ' stays on.';
+    state.w = prev; save(); renderControls(); renderSheet(); setStatus(msg);
+    return;
+  }
   setEq(state.eq);
   // Core intervals: unticking gear only removes the movements that need it and tops the circuit back up; the rest stay.
   if (changed === 'eq' && w && w.fmt === 'tabata') { regenerate(); return; }
@@ -2722,7 +2884,30 @@ function runAgain(e) {
 }
 
 // Backup: the whole log as one file, saved through the share or download sheet (Files or iCloud Drive on iPhone).
+// Progress per movement: the last few entries with reps and kg, and the heaviest kg.
+function renderProgress() {
+  const byName = {};
+  readLog().forEach(function (e) {
+    (e.lines || []).forEach(function (x) {
+      if (!x.name) return;
+      (byName[x.name] = byName[x.name] || []).push({ t: e.t, reps: x.reps || '', kg: x.kg || '' });
+    });
+  });
+  const ul = $('prog-list');
+  ul.innerHTML = '';
+  Object.keys(byName).map(function (name) {
+    const rows = byName[name].sort(function (a, b) { return b.t - a.t; });
+    const kgs = rows.map(function (r) { return parseFloat(r.kg); }).filter(function (v) { return !isNaN(v); });
+    return { name: name, rows: rows, heaviest: kgs.length ? Math.max.apply(null, kgs) : null };
+  }).sort(function (a, b) { return b.rows[0].t - a.rows[0].t; }).slice(0, 30).forEach(function (m) {
+    const last = m.rows[0];
+    const li = document.createElement('li');
+    li.textContent = m.name + ' · last ' + (last.reps ? last.reps + ' reps' : '') + (last.kg ? (last.reps ? ' × ' : '') + last.kg + ' kg' : '') + (m.heaviest !== null ? ' · heaviest ' + m.heaviest + ' kg' : '') + ' · ' + new Date(last.t).toLocaleDateString();
+    ul.appendChild(li);
+  });
+}
 function renderHist() {
+  renderProgress();
   const log = readLog();
   const ul = $('hist-list');
   ul.innerHTML = '';
@@ -2898,6 +3083,34 @@ $('log-tl-copy').addEventListener('click', function () {
 $('log-cancel').addEventListener('click', function () { openPanel(''); });
 $('hist-close').addEventListener('click', function () { openPanel(''); });
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+// Export copies the log as JSON: file downloads are blocked inside the artifact viewer.
+$('hist-export').addEventListener('click', function () {
+  copyText(JSON.stringify(readLog(), null, 2), 'Log copied as JSON. Paste it into a file to keep it.');
+});
+$('hist-file').addEventListener('change', function () {
+  const f = this.files && this.files[0];
+  this.value = '';
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = function () {
+    let incoming = null;
+    try { incoming = JSON.parse(String(r.result)); } catch (e) { incoming = null; }
+    if (!Array.isArray(incoming)) { setStatus('That file is not a mini-pump log.'); return; }
+    const log = readLog().slice();
+    const seen = {};
+    log.forEach(function (e) { seen[e.t + '|' + e.title] = true; });
+    let added = 0;
+    incoming.forEach(function (e) {
+      if (!e || typeof e.t !== 'number' || seen[e.t + '|' + e.title]) return;
+      seen[e.t + '|' + e.title] = true; log.push(e); added++;
+    });
+    log.sort(function (a, b) { return a.t - b.t; });
+    const ok = writeLog(log);
+    renderHist();
+    setStatus(ok ? 'Imported ' + added + ' entries.' : 'Imported, but this browser would not keep them.');
+  };
+  r.readAsText(f);
+});
 $('hist-copy').addEventListener('click', function () {
   const text = readLog().slice().reverse().map(function (e) { return new Date(e.t).toLocaleDateString() + ' | ' + e.title + ' | ' + e.result + (e.lines || []).map(function (x) { return ' | ' + x.name + ' ' + (x.reps ? x.reps + ' reps' : '') + (x.kg ? ' ' + x.kg + ' kg' : ''); }).join('') + (e.note ? ' | ' + e.note : ''); }).join('\n');
   const done = function () { setStatus('Log copied.'); };
@@ -2905,7 +3118,8 @@ $('hist-copy').addEventListener('click', function () {
 });
 
 renderControls();
-regenerate();
+loadGorSet();
+if (!restoreLast()) regenerate();
 </script>
 </html>
 </body></html>
