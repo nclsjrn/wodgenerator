@@ -114,6 +114,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* The main actions stay at the bottom of the screen while you scroll, like an app's tab bar. */
 .appbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; column-gap: 4px; }
 .appbar .act-row { grid-column: 1 / -1; }
+/* With Clear hidden (Gorilla and Hero), the other four white boxes share the row. */
+.appbar .act-row:has(#btn-clear[hidden]) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 /* New workout and Start timer (coloured) sit above; the white tabs sit below them. */
 .appbar > #btn-new, .appbar > .timer-start { order: 0; }
 /* Main bar: Training switch (small) sits before New workout; Start timer takes the full row below both. */
