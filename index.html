@@ -1804,6 +1804,17 @@ function dbList(text, name) {
   if (!/each hand|one hand|one dumbbell/.test(text) && !/dumbbell|goblet|renegade/i.test(name)) return text;
   return listIn(DB_STEPS, text);
 }
+// Dumbbell and kettlebell loads say how many implements: "one dumbbell" / "one kettlebell" when the movement uses one
+// (one-sided moves and the single-implement lifts below), otherwise "each hand". Loads that already say so are left alone.
+const ONE_IMPLEMENT_RE = /goblet|swing|pullover|sit-up|woodchop|Russian twist|hip thrust|bridge|back extension|dead bug|suitcase|farmer|Single-arm|Renegade|skull crushers|kickback|concentration/i;
+function addImplement(m, s) {
+  if (!s) return s;
+  const e = eqOf(m);
+  if (e !== 'db' && e !== 'kb') return s;
+  if (/each hand|one dumbbell|one kettlebell|one hand|\bx\b|bar|total|plate|bag|ball/i.test(s)) return s;
+  const one = m.unit === 'side' || m.unit === 's side' || ONE_IMPLEMENT_RE.test(m.name);
+  return s + (one ? ', one ' + (e === 'db' ? 'dumbbell' : 'kettlebell') : ' each hand');
+}
 function loadFor(m) {
   if (m.load !== undefined) return dbList(m.load, m.name);
   for (let i = 0; i < LOADS.length; i++) if (LOADS[i][0].test(m.name)) return dbList(LOADS[i][1], m.name);
@@ -1818,7 +1829,7 @@ function hintFor(m) {
   if (m.hint !== undefined) return m.hint;
   const parts = [];
   TEMPOS.forEach(function (t) { if (t[0].test(m.name)) parts.push(t[1]); });
-  const ld = loadFor(m);
+  const ld = addImplement(m, loadFor(m));
   const cond = m.cat === 'cond' || (m.muscles && m.muscles[0] === 'cond');
   if (ld) parts.push('Start with ' + ld);
   else if (!cond) parts.push(/Band-resisted/i.test(m.name) ? 'Bodyweight + resistance band' : /\bband\b/i.test(m.name) ? 'Resistance band' : 'Bodyweight');
