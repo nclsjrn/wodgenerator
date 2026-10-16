@@ -2980,13 +2980,31 @@ function renderProgress() {
     ul.appendChild(li);
   });
 }
+// One history entry as a plain text line, the same format as Copy log.
+function entryText(e) {
+  return new Date(e.t).toLocaleDateString() + ' | ' + e.title + ' | ' + e.result + (e.lines || []).map(function (x) { return ' | ' + x.name + ' ' + (x.reps ? x.reps + ' reps' : '') + (x.kg ? ' ' + x.kg + ' kg' : ''); }).join('') + (e.note ? ' | ' + e.note : '');
+}
+function copyPlain(text, doneMsg) {
+  const done = function () { setStatus(doneMsg); };
+  const fallback = function () {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) {}
+    document.body.removeChild(ta);
+    if (ok) done(); else setStatus('Copy is blocked here.');
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+}
 function renderHist() {
   renderProgress();
   const log = readLog();
   const ul = $('hist-list');
   ul.innerHTML = '';
   $('hist-empty').hidden = log.length > 0;
-  log.slice().reverse().slice(0, 40).forEach(function (e) {
+  log.slice().reverse().forEach(function (e) {
     const li = document.createElement('li');
     const left = document.createElement('div');
     const when = document.createElement('div'); when.className = 'when'; when.textContent = new Date(e.t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
@@ -3009,6 +3027,15 @@ function renderHist() {
       again.addEventListener('click', function () { runAgain(e); });
       acts.appendChild(again);
     }
+    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'del'; copy.textContent = 'Copy';
+    copy.addEventListener('click', function () { copyPlain(entryText(e), 'Entry copied.'); });
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
+    del.addEventListener('click', function () {
+      if (!confirm('Delete this entry from the history?')) return;
+      writeLog(readLog().filter(function (x) { return x !== e; })); renderHist(); if (state.w) setNote(noteBase);
+    });
+    acts.appendChild(copy);
+    acts.appendChild(del);
     li.appendChild(acts);
     ul.appendChild(li);
   });
@@ -3123,7 +3150,7 @@ $('log-cancel').addEventListener('click', function () { openPanel(''); });
 $('hist-close').addEventListener('click', function () { openPanel(''); });
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 $('hist-copy').addEventListener('click', function () {
-  const text = readLog().slice().reverse().map(function (e) { return new Date(e.t).toLocaleDateString() + ' | ' + e.title + ' | ' + e.result + (e.lines || []).map(function (x) { return ' | ' + x.name + ' ' + (x.reps ? x.reps + ' reps' : '') + (x.kg ? ' ' + x.kg + ' kg' : ''); }).join('') + (e.note ? ' | ' + e.note : ''); }).join('\n');
+  const text = readLog().slice().reverse().map(entryText).join('\n');
   const done = function () { setStatus('Log copied.'); };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { setStatus('Copy is blocked here.'); }); else setStatus('Copy is blocked here.');
 });
