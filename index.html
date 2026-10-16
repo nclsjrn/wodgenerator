@@ -102,6 +102,13 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   background: transparent; color: var(--muted); cursor: pointer;
 }
 .swap:hover { color: var(--ink); border-color: var(--ink); }
+.acts { display: flex; align-items: center; gap: 6px; }
+.undo { margin-top: 10px; min-height: 40px; padding: 0 14px; border: 1px solid var(--rule); border-radius: 10px; background: transparent; color: var(--ink); font: 600 0.9rem var(--font-body); cursor: pointer; }
+.undo:disabled { opacity: 0.35; cursor: default; }
+.move { display: flex; flex-direction: column; gap: 4px; }
+.mvbtn { width: 30px; height: 21px; padding: 0; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 6px; background: transparent; color: var(--muted); font-size: 0.6rem; line-height: 1; cursor: pointer; }
+.mvbtn:hover:not(:disabled) { color: var(--ink); border-color: var(--ink); }
+.mvbtn:disabled { opacity: 0.3; cursor: default; }
 .swap svg { width: 20px; height: 20px; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -274,6 +281,8 @@ body.compact .appbar { padding-top: 6px; padding-bottom: calc(6px + env(safe-are
 h4.sub { font: 600 0.75rem/1.2 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
 #seg-mu { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 #seg-mu button { width: 100%; min-width: 0; padding-inline: 2px; white-space: nowrap; overflow: hidden; text-overflow: clip; letter-spacing: -0.01em; }
+/* Sessions with three muscles (Legs: Shoulders, Legs, Comp) share the row equally instead of leaving a gap. */
+#seg-mu:not(:has(button:nth-child(4))) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 /* Every selector row uses one button size. */
 .seg button { font-size: 0.82rem; }
 .fin-head + .mvs .mv .body { gap: 0; }
@@ -1003,6 +1012,10 @@ function validShape(items, fmt, T, relax, rules, extra) {
   if (comps.length > 1 && !(DBL && comps.length === 2 && comps.filter(function (m) { return m.pat !== 'carry'; }).length === 1)) return false;
   if (new Set(items.map(function (m) { return m.base; })).size !== items.length) return false;
   if (new Set(items.map(function (m) { return m.pat; })).size !== items.length) return false;
+  // With a main muscle in the workout, no more than two movements may go to the same small muscle (a megaset of one main and three arm or shoulder moves is avoided).
+  if (T >= 4 && items.some(function (m) { return ['chest', 'back', 'legs'].indexOf(m.muscles[0]) !== -1; })) {
+    if (['biceps', 'triceps', 'shoulders'].some(function (k) { return items.filter(function (m) { return m.muscles[0] === k; }).length > 2; })) return false;
+  }
   if (fmt === 'amrap' && items.filter(function (m) { return !isTimed(m); }).length < 1) return false;
   if (rules) {
     // Hypertrophy: at least one big muscle (chest or back) in the circuit.
@@ -1381,6 +1394,22 @@ function swapPairAt(w, i) {
   }
   return false;
 }
+// Another muscle chosen for this workout can take the position; the slot takes that muscle's name.
+function swapOther(w, i, used) {
+  if (w.fmt === 'tabata' || w.arm || !w.spec[i]) return false;
+  const cur = w.spec[i].k;
+  const others = shuffle((w.sel || []).filter(function (k) { return k !== cur && k !== 'comp' && MU[k]; }));
+  for (let o = 0; o < others.length; o++) {
+    const sp = { k: others[o], slot: null };
+    const pool = shuffle(specPool(sp, w.fmt, w.rules).filter(function (m) { return used.indexOf(m.name) === -1; }));
+    for (let k = 0; k < pool.length; k++) {
+      const next = w.items.slice(), nspec = w.spec.slice();
+      next[i] = pool[k]; nspec[i] = sp;
+      if (valid(next, nspec, w.fmt, next.length, true, w.rules, w.extra, w.loose)) { w.items = next; w.spec = nspec; orderBySize(w); return true; }
+    }
+  }
+  return false;
+}
 function swapAt(w, i) {
   DBL = !!w.dbl;
   if (w.fmt === 'tabata' && sides(w.items[i]).length === 2) return swapPairAt(w, i);
@@ -1394,11 +1423,13 @@ function swapAt(w, i) {
   if (w.fmt !== 'tabata') { const rank = rankOrder[w.fmt === 'fortime' ? 'fortime' : 'other']; cands.sort(function (a, b) { return rank(a) - rank(b); }); }
   // Bands are the last resource: any non-band candidate comes first.
   const cands2 = bandLast(cands); cands.length = 0; cands2.forEach(function (m) { cands.push(m); });
+  if (Math.random() < 0.5 && swapOther(w, i, used)) return true;
   for (let k = 0; k < cands.length; k++) {
     const next = w.items.slice();
     next[i] = cands[k];
     if (valid(next, w.spec, w.fmt, w.fmt === 'tabata' ? tabataSlots(w) : w.items.length, true, w.rules, w.extra, w.loose)) { w.items = next; orderBySize(w); return true; }
   }
+  if (swapOther(w, i, used)) return true;
   return false;
 }
 
@@ -2231,7 +2262,7 @@ function tagOf(m, k) {
   return NAMES[k] || k;
 }
 
-function makeRow(m, amt, tagText, onSwap) {
+function makeRow(m, amt, tagText, onSwap, mv) {
   const li = document.createElement('li');
   li.className = 'mv';
   const rx = document.createElement('div');
@@ -2252,7 +2283,27 @@ function makeRow(m, amt, tagText, onSwap) {
   sw.setAttribute('aria-label', 'Swap ' + m.name);
   sw.innerHTML = SWAP_ICON;
   if (onSwap) sw.addEventListener('click', onSwap);
-  li.appendChild(rx); li.appendChild(body); if (onSwap) li.appendChild(sw);
+  li.appendChild(rx); li.appendChild(body);
+  if (mv || onSwap) {
+    const acts = document.createElement('div');
+    acts.className = 'acts';
+    if (mv) {
+      const col = document.createElement('div');
+      col.className = 'move';
+      [['up', '\u25B2', 'Move up: ', mv.first, mv.up], ['down', '\u25BC', 'Move down: ', mv.last, mv.down]].forEach(function (d) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'mvbtn';
+        b.setAttribute('aria-label', d[2] + m.name);
+        b.textContent = d[1];
+        b.disabled = !!d[3];
+        b.addEventListener('click', d[4]);
+        col.appendChild(b);
+      });
+      acts.appendChild(col);
+    }
+    if (onSwap) acts.appendChild(sw);
+    li.appendChild(acts);
+  }
   return li;
 }
 
@@ -2273,7 +2324,8 @@ function restoreLast() {
   const w = saved.w;
   if (!w.gor && !w.hero && w.items) w.items = w.items.map(function (x) {
     const base = MOVES.find(function (m) { return m.name === x.name; });
-    return base ? Object.assign({}, base, x) : x;
+    // Use the same movement objects as the generator does, so swaps still recognise them after a reopen.
+    return base || x;
   });
   state.w = w;
   if (w.hero) renderHero(); else if (w.gor) renderGorilla(); else renderSheet();
@@ -2317,13 +2369,44 @@ function renderGorilla() {
   ul.className = 'mvs';
   w.items.forEach(function (it, i) {
     ul.appendChild(makeRow({ name: it.name, hint: it.hint, muscles: ['gor'] }, { n: it.n, u: it.u }, it.tag, function () {
-      if (gorSwap(state.w, i)) renderGorilla(); else setStatus('No other movement fits this slot.');
+      if (changeWith(function () { return gorSwap(state.w, i); })) renderGorilla(); else setStatus('No other movement fits this slot.');
     }));
   });
   sheet.appendChild(h2); sheet.appendChild(ul);
   setNote('Bodyweight only. Medium is about 80% of the reps, Hard is the full list. Stop a set one or two reps before form breaks and keep the pace of the first round.');
   timerStop();
   renderTimer();
+}
+
+// Undo: the last changes made to the workout (swaps, moves, finisher and Gorilla swaps), most recent last.
+const undoStack = [];
+function changeWith(fn) {
+  const w = state.w;
+  const snap = w ? snapshotW(w) : null;
+  const ok = fn();
+  if (ok && snap) { undoStack.push(snap); if (undoStack.length > 20) undoStack.shift(); }
+  return ok;
+}
+function undoLast() {
+  const prev = undoStack.pop();
+  if (!prev) return;
+  state.w = prev;
+  if (prev.hero) renderHero(); else if (prev.gor) renderGorilla(); else renderSheet();
+  setStatus('Undone.');
+}
+
+// Moves the movement at position i up (d = -1) or down (d = 1). Its slot rules move with it, so the rules still match.
+function moveAt(i, d) {
+  const w = state.w;
+  if (!w || w.hero || w.gor || !w.spec || w.spec.length !== w.items.length) return;
+  const j = i + d;
+  if (j < 0 || j >= w.items.length) return;
+  undoStack.push(snapshotW(w)); if (undoStack.length > 20) undoStack.shift();
+  const items = w.items.slice(), spec = w.spec.slice();
+  let t = items[i]; items[i] = items[j]; items[j] = t;
+  t = spec[i]; spec[i] = spec[j]; spec[j] = t;
+  w.items = items; w.spec = spec;
+  renderSheet();
 }
 
 function renderSheet() {
@@ -2340,19 +2423,21 @@ function renderSheet() {
   ul.className = 'mvs';
   let row = 0;
   const totalRows = w.fmt === 'tabata' ? rowsOf(w).length : 0;
+  const canMove = !w.hero && !w.gor && !!w.spec && w.spec.length === w.items.length;
   w.items.forEach(function (m, i) {
     const lab = labelFor(w, i);
     const onSwap = function () {
-      if (swapAt(state.w, i)) renderSheet(); else setStatus('No other movement fits this slot.');
+      if (changeWith(function () { return swapAt(state.w, i); })) renderSheet(); else setStatus('No other movement fits this slot.');
     };
+    const mv = canMove ? { first: i === 0, last: i === w.items.length - 1, up: function () { moveAt(i, -1); }, down: function () { moveAt(i, 1); } } : null;
     if (w.fmt === 'tabata') {
-      sides(m).forEach(function (sd) {
+      sides(m).forEach(function (sd, k) {
         row += 1;
         const grp = w.arm ? tagOf(m, m.muscles.indexOf('triceps') !== -1 ? 'triceps' : 'biceps') : 'Core';
-        ul.appendChild(makeRow(m, { n: row, u: sd || 'of ' + totalRows }, grp + (sd ? ' · ' + sd : ''), onSwap));
+        ul.appendChild(makeRow(m, { n: row, u: sd || 'of ' + totalRows }, grp + (sd ? ' · ' + sd : ''), onSwap, k === 0 ? mv : null));
       });
     } else {
-      ul.appendChild(makeRow(m, amount(m, w), (lab ? lab + ' · ' : '') + tagOf(m, w.spec[i].k), onSwap));
+      ul.appendChild(makeRow(m, amount(m, w), (lab ? lab + ' · ' : '') + tagOf(m, w.spec[i].k), onSwap, mv));
     }
   });
   const fh = document.createElement('p');
@@ -2362,10 +2447,14 @@ function renderSheet() {
   fl.className = 'mvs';
   if (w.fin) {
     fl.appendChild(makeRow(w.fin, { n: finMin(w.lvl), u: 'min' }, '', function () {
-      if (swapFin(state.w)) renderSheet(); else setStatus('No other finisher fits.');
+      if (changeWith(function () { return swapFin(state.w); })) renderSheet(); else setStatus('No other finisher fits.');
     }));
   }
-  sheet.appendChild(h); sheet.appendChild(ul);
+  const ub = document.createElement('button');
+  ub.type = 'button'; ub.className = 'undo'; ub.textContent = 'Undo last change';
+  ub.disabled = !undoStack.length;
+  ub.addEventListener('click', undoLast);
+  sheet.appendChild(h); sheet.appendChild(ul); sheet.appendChild(ub);
   if (w.fin) { sheet.appendChild(fh); sheet.appendChild(fl); }
   keepLast(); // after the rows: repsFor fills w.repMap while they are built
   const P = PRESETS[w.preset];
@@ -2588,6 +2677,7 @@ function applyTraining() {
 }
 
 function regenerate() {
+  undoStack.length = 0;
   setEq(state.eq);
   CORE_TYPE = state.ctype;
   $('logbox').hidden = true;
